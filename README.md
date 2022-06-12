@@ -109,15 +109,185 @@ string mmapedKVKey(const string &mmapID, const MMKVPath_t *rootPath) {
 }
 ```
 
-- By this time, we'll have a `MMKV *kv` instance. This class has the typical `set(T value, string key)`.
+## Setting data
+
+By this time, we'll have a `MMKV *kv` instance. This class has the typical `set(T value, string key)`.
 Let's view a example set():
 ```C++
-// Takes in a "char *value" which is basically a string and a "MMKVKey_t key" which is basically a 
-// string type or a "NSString *" on Apple.
-bool MMKV::set(const char *value, MMKVKey_t key) {
-    if (!value) {
-        removeValueForKey(key);
-        return true;
+// Takes in a `int32_t` value, which can a signed value. 
+bool MMKV::set(int32_t value, MMKVKey_t key) {
+    
+    if (isKeyEmpty(key)) {
+    
+        return false;
+    }// Pass in key The value cannot be an empty string 
+    
+    // Returns the number of bytes needed to base-128 encode a 32-bit int. 
+    // Note: May return 10 if `value` is negative
+    size_t size = pbInt32Size(value);
+    
+    // Prepare a buffer of `size` length 
+    MMBuffer data(size);
+    CodedOutputData output(data.getPtr(), size);
+   
+    // Writes the `value` as a Int32 within the protobuf-encoding scheme (wire type 0 - varint "int32")
+    output.writeInt32(value);
+
+    // Call `setDataForKey(CodedOutputData_ref, "test_key")
+    return setDataForKey(move(data), key);
+}
+```
+
+From the programmer's perspective, the call is done and now the key-value is now saved and ready
+for usability via "get()". However, there's still more information to be gained regarding how the 
+protobuf-encoded buffer is serialized to disk.
+Let's take a look at `setDataForKey(CodedOutputData_ref, "test_key")`
+
+```C++
+// eg. `setDataForKey(CodedOutputData_ref, "test_key", False)`
+
+bool MMKV::setDataForKey(MMBuffer &&data, MMKVKey_t key, bool isDataHolder) {
+    
+    if ((!isDataHolder && data.length() == 0) || isKeyEmpty(key)) {
+    
+        return false;
     }
-    return setDataForKey(MMBuffer((void *) value, strlen(value), MMBufferNoCopy), key, true);
-}```
+    SCOPED_LOCK(m_lock);
+    SCOPED_LOCK(m_exclusiveProcessLock);
+    checkLoadData();
+
+// ! ALL SKIPPED FOR VANILLA ENCODING - deep dive needed for encryption use cases !)
+[//]: # (#ifndef MMKV_DISABLE_CRYPT)
+
+[//]: # (    
+
+[//]: # (    if &#40;m_crypter&#41; {)
+
+[//]: # (    )
+[//]: # (        if &#40;isDataHolder&#41; {)
+
+[//]: # (    )
+[//]: # (            auto sizeNeededForData = pbRawVarint32Size&#40;&#40;uint32_t&#41; data.length&#40;&#41;&#41; + data.length&#40;&#41;;)
+
+[//]: # (            if &#40;!KeyValueHolderCrypt::isValueStoredAsOffset&#40;sizeNeededForData&#41;&#41; {)
+
+[//]: # (    )
+[//]: # (                data = MiniPBCoder::encodeDataWithObject&#40;data&#41;;// take value Construct a Protobuf Data objects )
+
+[//]: # (                isDataHolder = false;)
+
+[//]: # (            })
+
+[//]: # (        })
+
+[//]: # (        auto itr = m_dicCrypt->find&#40;key&#41;;)
+
+[//]: # (        if &#40;itr != m_dicCrypt->end&#40;&#41;&#41; {)
+
+[//]: # (    )
+[//]: # (# ifdef MMKV_APPLE)
+
+[//]: # (            auto ret = appendDataWithKey&#40;data, key, itr->second, isDataHolder&#41;;)
+
+[//]: # (# else)
+
+[//]: # (			// Save data logic )
+
+[//]: # (            auto ret = appendDataWithKey&#40;data, key, isDataHolder&#41;;)
+
+[//]: # (# endif)
+
+[//]: # (            if &#40;!ret.first&#41; {)
+
+[//]: # (    )
+[//]: # (                return false;)
+
+[//]: # (            })
+
+[//]: # (            if &#40;KeyValueHolderCrypt::isValueStoredAsOffset&#40;ret.second.valueSize&#41;&#41; {)
+
+[//]: # (    )
+[//]: # (                KeyValueHolderCrypt kvHolder&#40;ret.second.keySize, ret.second.valueSize, ret.second.offset&#41;;)
+
+[//]: # (                memcpy&#40;&kvHolder.cryptStatus, &t_status, sizeof&#40;t_status&#41;&#41;;)
+
+[//]: # (                itr->second = move&#40;kvHolder&#41;;)
+
+[//]: # (            } else {)
+
+[//]: # (    )
+[//]: # (                itr->second = KeyValueHolderCrypt&#40;move&#40;data&#41;&#41;;)
+
+[//]: # (            })
+
+[//]: # (        } else {)
+
+[//]: # (    )
+[//]: # (            auto ret = appendDataWithKey&#40;data, key, isDataHolder&#41;;)
+
+[//]: # (            if &#40;!ret.first&#41; {)
+
+[//]: # (    )
+[//]: # (                return false;)
+
+[//]: # (            })
+
+[//]: # (            if &#40;KeyValueHolderCrypt::isValueStoredAsOffset&#40;ret.second.valueSize&#41;&#41; {)
+
+[//]: # (    )
+[//]: # (                auto r = m_dicCrypt->emplace&#40;)
+
+[//]: # (                    key, KeyValueHolderCrypt&#40;ret.second.keySize, ret.second.valueSize, ret.second.offset&#41;&#41;;)
+
+[//]: # (                if &#40;r.second&#41; {)
+
+[//]: # (    )
+[//]: # (                    memcpy&#40;&&#40;r.first->second.cryptStatus&#41;, &t_status, sizeof&#40;t_status&#41;&#41;;)
+
+[//]: # (                })
+
+[//]: # (            } else {)
+
+[//]: # (    )
+[//]: # (                m_dicCrypt->emplace&#40;key, KeyValueHolderCrypt&#40;move&#40;data&#41;&#41;&#41;;)
+
+[//]: # (            })
+
+[//]: # (        })
+
+[//]: # (    } else)
+
+[//]: # (#endif // MMKV_DISABLE_CRYPT)
+    {
+    
+        // Firstly, "m_dic" is an instance of the following `MMKVMap = std::unordered_map<std::string, mmkv::KeyValueHolder>;`
+        // Therefore, it's just a map/dictionary of key strings to some MMBuffer/KeyValueHolder
+        auto itr = m_dic->find(key);
+        if (itr != m_dic->end()) {
+    
+            auto ret = appendDataWithKey(data, itr->second, isDataHolder);
+            if (!ret.first) {
+    
+                return false;
+            }
+            itr->second = std::move(ret.second);
+        } else {
+    
+            
+            auto ret = appendDataWithKey(data, key, isDataHolder);
+            if (!ret.first) {
+    
+                return false;
+            }
+            m_dic->emplace(key, std::move(ret.second));// and insert similar   It's just emplace  The biggest effect is to avoid unnecessary temporary variables 
+        }
+    }
+    m_hasFullWriteback = false;
+#ifdef MMKV_APPLE
+    [key retain];
+#endif
+    return true;
+}
+```
+
+
