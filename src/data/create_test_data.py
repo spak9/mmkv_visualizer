@@ -3,14 +3,9 @@ import mmkv
 """
 Small script to create basic test data, in attempt to visual and analyze all the basic 
 types within MMKV (the protobuf wire types). 
-Note: For every run, it will attempt to delete `test_data` if it exists so we don't 
-append data records in a "log-structured" fashion, but rather can just simply look at the data.
 """
 
-
-if __name__ == "__main__":
-    mmkv.MMKV.initializeMMKV('.')
-
+def create_test_data():
     kv = mmkv.MMKV('test_data')
 
     # 1. int32 - positive
@@ -36,6 +31,26 @@ if __name__ == "__main__":
 
     # 8. bytes
     kv.set(b'some bytes', 'bytes_key')
+
+
+def test_updated_kv_pair():
+    kv = mmkv.MMKV('test_updated_kv_pair')
+
+    kv.set('value_1', 'some_key')
+    kv.set('value_2', 'some_key')
+
+    print(kv.getString('some_key'))
+
+
+if __name__ == "__main__":
+    mmkv.MMKV.initializeMMKV('.')
+
+    # Basic test data
+    # create_test_data()
+
+    # testing updates of the same key, checking which value it gets
+    test_updated_kv_pair()
+
 
 """      
 00000000  bd 00 00 00 ff ff ff 07  12 69 6e 74 33 32 5f 70  |?...???..int32_p|
