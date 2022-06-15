@@ -1,4 +1,7 @@
+from io import BufferedReader
 from pathlib import Path
+from typing import Optional
+
 
 class MMKVParser:
     """
@@ -6,9 +9,9 @@ class MMKVParser:
     """
 
     def __init__(self):
-        self._mmkv_buffer = None
-        self._crc_buffer = None
-
+        self.mmkv_file: Optional[BufferedReader] = None
+        self.crc_file: Optional[BufferedReader] = None
+        self.decoded_data: Optional[BufferedReader] = None
 
     def initialize(self, mmkv_file_name: str, crc_file_name: str = ''):
         """
@@ -20,18 +23,22 @@ class MMKVParser:
         :return: None
         """
         # Check if files exists
-        mmkv_file_path = Path(f'../data/{mmkv_file_name}')
+        mmkv_file_path = Path.cwd() / 'data' / mmkv_file_name
         if not mmkv_file_path.exists():
-            print('test data is not found')
+            print(f'[+] The following directory does not exist - {mmkv_file_name}')
             exit(1)
 
         # TODO - CRC32 check
 
+        # Set up the MMKV File object
+        self.mmkv_file = open(mmkv_file_path, 'rb')
 
-        # Open and read mmkv file data
-        self._mmkv_buffer = open(mmkv_file_path, 'rb').read()
-        print(self._mmkv_buffer)
 
+    def decode_mmkv_data(self):
+        """
+        A best-effort approach on
+        :return:
+        """
 
 
 
