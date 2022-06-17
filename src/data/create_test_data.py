@@ -17,16 +17,16 @@ def create_test_data():
     kv = mmkv.MMKV('test_all_types')
 
     # 1. int32 - positive
-    kv.set((2 ** 32) - 1, 'int32_positive_key')
+    kv.set((1 << 31) - 1, 'int32_positive_key')
 
     # 2. int32 - negative (10-bytes needed)
-    kv.set(-1 * (2 ** 32), 'int32_negative_key')
+    kv.set(-1 * (1 << 31), 'int32_negative_key')
 
     # 3. int64 - positive
-    kv.set((2 ** 64) - 1, 'int64_positive_key')
+    kv.set((1 << 63) - 1, 'int64_positive_key')
 
     # 4. int64 - negative (10-bytes needed)
-    kv.set(-1 * (2 ** 63), 'int64_negative_key')
+    kv.set(-1 * (1 << 63), 'int64_negative_key')
 
     # 5. bool - true
     kv.set(True, 'bool_true_key')
