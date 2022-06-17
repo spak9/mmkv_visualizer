@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import mmkv
 
 """
@@ -6,19 +8,25 @@ types within MMKV (the protobuf wire types).
 """
 
 def create_test_data():
-    kv = mmkv.MMKV('test_data')
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('test_all_types')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    # Create data within an MMKV file called "test_all_types")
+    kv = mmkv.MMKV('test_all_types')
 
     # 1. int32 - positive
-    kv.set(1234, 'int32_positive_key')
+    kv.set((2 ** 32) - 1, 'int32_positive_key')
 
     # 2. int32 - negative (10-bytes needed)
-    kv.set(-1234, 'int32_negative_key')
+    kv.set(-1 * (2 ** 32), 'int32_negative_key')
 
     # 3. int64 - positive
-    kv.set(2 ** 32 + 1, 'int64_positive_key')
+    kv.set((2 ** 64) - 1, 'int64_positive_key')
 
-    # 4. int64 - negative
-    kv.set(-1 * (2 ** 32) - 1, 'int64_negative_key')
+    # 4. int64 - negative (10-bytes needed)
+    kv.set(-1 * (2 ** 63), 'int64_negative_key')
 
     # 5. bool - true
     kv.set(True, 'bool_true_key')
@@ -27,30 +35,32 @@ def create_test_data():
     kv.set(False, 'bool_false_key')
 
     # 7. string
-    kv.set('Hi Steven!', 'string_key')
+    kv.set('steven pak', 'string_key')
 
     # 8. bytes
     kv.set(b'some bytes', 'bytes_key')
 
 
-def test_updated_kv_pair():
+def create_test_updated_kv_pair():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('test_updated_kv_pair')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
     kv = mmkv.MMKV('test_updated_kv_pair')
 
     kv.set('value_1', 'some_key')
     kv.set('value_2', 'some_key')
-
-    print(kv.getString('some_key'))
 
 
 if __name__ == "__main__":
     mmkv.MMKV.initializeMMKV('.')
 
     # Basic test data
-    # create_test_data()
+    create_test_data()
 
     # testing updates of the same key, checking which value it gets
-    test_updated_kv_pair()
-
+    create_test_updated_kv_pair()
 
 """      
 00000000  bd 00 00 00 ff ff ff 07  12 69 6e 74 33 32 5f 70  |?...???..int32_p|

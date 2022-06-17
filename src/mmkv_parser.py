@@ -15,7 +15,7 @@ class MMKVParser:
     def __init__(self):
         self.mmkv_file: Optional[BufferedReader] = None
         self.crc_file: Optional[BufferedReader] = None
-        self.decoded_map: Dict[str, defaultdict[List[bytes]]] = {}
+        self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
         self.pos = 0
 
     def initialize(self, mmkv_file_name: str, crc_file_name: str = ''):
@@ -50,5 +50,18 @@ class MMKVParser:
         self.mmkv_file.read(8)
         self.pos += 8
 
-        pb_reader.decode_varint(self.mmkv_file, self.pos)
+        # Loop and read key-value pairs into `decoded_map`
+        while self.mmkv_file.peek():
+            # parse key
+            key_length, self.pos = pb_reader.decode_varint(self.mmkv_file, self.pos, mask=32)
+            key = self.mmkv_file.read(key_length).decode(encoding='utf-8')
+
+            # parse value
+            value_length, self.pos = pb_reader.decode_varint(self.mmkv_file, self.pos, mask=32)
+            value = self.mmkv_file.read(value_length)   # interpretable
+
+            # update map
+            self.decoded_map[key].append(value)
+
+
 
