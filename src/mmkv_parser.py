@@ -39,7 +39,7 @@ class MMKVParser:
         # Set up the MMKV File object
         self.mmkv_file = open(mmkv_file_path, 'rb')
 
-    def _decode_into_map(self) -> defaultdict:
+    def decode_into_map(self) -> defaultdict:
         """
         A best-effort approach on linearly parsing the `mmkv_file` BufferedReader
         and build up our `decoded_map`.
@@ -150,4 +150,6 @@ class MMKVParser:
         wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), 0, mask=32)
         value = value[wrapper_bytes_len:]
         return value
+
+    # TODO - floats
 

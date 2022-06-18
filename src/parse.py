@@ -4,7 +4,7 @@ if __name__ == "__main__":
 
     mmkv_parser = MMKVParser()
     mmkv_parser.initialize(mmkv_file_name='test_all_types')
-    map = mmkv_parser._decode_into_map()
+    map = mmkv_parser.decode_into_map()
 
     for key, value in map.items():
         print(f'key: {key} - value: {value}')
