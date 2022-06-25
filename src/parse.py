@@ -1,14 +1,15 @@
 from mmkv_parser import MMKVParser
+from pathlib import Path
 
 if __name__ == "__main__":
 
     mmkv_parser = MMKVParser()
-    mmkv_parser.initialize(mmkv_file_name='test_all_types')
+    data_path = Path(__file__).parents[1] / 'data' / 'test_all_types'
+    mmkv_parser.initialize(mmkv_abs_path_name=str(data_path))
     map = mmkv_parser.decode_into_map()
 
     for key, value in map.items():
         print(f'key: {key} - value: {value}')
-
 
     print(mmkv_parser.decode_as_int32(map.get('int32_positive_key')[0]))
     print(mmkv_parser.decode_as_uint32(map.get('int32_positive_key')[0]))

@@ -18,20 +18,21 @@ class MMKVParser:
         self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
         self.pos = 0
 
-    def initialize(self, mmkv_file_name: str, crc_file_name: str = ''):
+    def initialize(self, mmkv_abs_path_name: str, crc_abs_path_name: str = ''):
         """
         Sets up the mmkv data file and optionally the CRC32 file.
         If crc filename is not given, will attempt to use append ".crc"
 
-        :param mmkv_file_name: filename string
-        :param crc_file_name: filename string
+        :param mmkv_abs_path_name: absolute path filename string
+        :param crc_abs_path_name: absolute path filename string
         :return: None
         """
 
         # Check if files exists w.r.t the "data" directory
-        mmkv_file_path = Path.cwd() / 'data' / mmkv_file_name
+        # mmkv_file_path = Path.cwd() / 'data' / mmkv_file_name
+        mmkv_file_path = Path(mmkv_abs_path_name)
         if not mmkv_file_path.exists():
-            print(f'[+] The following directory does not exist - {mmkv_file_name}')
+            print(f'[+] The following directory does not exist - {mmkv_abs_path_name}')
             sys.exit(-1)
 
         # TODO - CRC32 check
