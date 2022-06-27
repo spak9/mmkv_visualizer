@@ -14,12 +14,12 @@ def create_basic_data():
     :return:
     """
     # Check if test data exist, if so, delete, so we don't append
-    test_data_file = Path('test_all_types')
+    test_data_file = Path('create_basic_data')
     if test_data_file.exists():
         test_data_file.unlink()
 
     # Create data within an MMKV file called "test_all_types")
-    kv = mmkv.MMKV('test_all_types')
+    kv = mmkv.MMKV('create_basic_data')
 
     # 1. int32 - positive
     kv.set((1 << 31) - 1, 'int32_positive_key')
@@ -56,11 +56,11 @@ def create_overwritten_kv_data():
     :return:
     """
     # Check if test data exist, if so, delete, so we don't append
-    test_data_file = Path('test_updated_kv_pair')
+    test_data_file = Path('create_overwritten_kv_data')
     if test_data_file.exists():
         test_data_file.unlink()
 
-    kv = mmkv.MMKV('test_updated_kv_pair')
+    kv = mmkv.MMKV('create_overwritten_kv_data')
 
     kv.set('value_1', 'some_key')
     kv.set('value_2', 'some_key')
@@ -72,11 +72,11 @@ def create_encrypted_data():
     :return:
     """
     # Check if test data exist, if so, delete, so we don't append
-    test_data_file = Path('test_one_pair')
+    test_data_file = Path('create_encrypted_data')
     if test_data_file.exists():
         test_data_file.unlink()
 
-    kv = mmkv.MMKV('test_one_pair', mmkv.MMKVMode.SingleProcess, 'my_key')
+    kv = mmkv.MMKV('create_encrypted_data', mmkv.MMKVMode.SingleProcess, 'my_key')
     kv.set('some_string', 'string_key')
 
 
