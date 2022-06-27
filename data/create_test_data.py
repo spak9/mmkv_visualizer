@@ -7,7 +7,12 @@ Small script to create basic test data, in attempt to visual and analyze all the
 types within MMKV (the protobuf wire types). 
 """
 
-def create_test_data():
+def create_basic_data():
+    """
+    Create basic test data with all types.
+
+    :return:
+    """
     # Check if test data exist, if so, delete, so we don't append
     test_data_file = Path('test_all_types')
     if test_data_file.exists():
@@ -40,8 +45,16 @@ def create_test_data():
     # 8. bytes
     kv.set(b'some bytes', 'bytes_key')
 
+    # 9. float
+    kv.set(3.14, 'float_key')
 
-def create_test_updated_kv_pair():
+
+def create_overwritten_kv_data():
+    """
+    Create test data with "overwritten" key-value pair
+
+    :return:
+    """
     # Check if test data exist, if so, delete, so we don't append
     test_data_file = Path('test_updated_kv_pair')
     if test_data_file.exists():
@@ -52,13 +65,26 @@ def create_test_updated_kv_pair():
     kv.set('value_1', 'some_key')
     kv.set('value_2', 'some_key')
 
+def create_encrypted_data():
+    """
+    Create encrypted test data with `my_key` enc key.
+
+    :return:
+    """
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('test_one_pair')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('test_one_pair', mmkv.MMKVMode.SingleProcess, 'my_key')
+    kv.set('some_string', 'string_key')
+
 
 if __name__ == "__main__":
     mmkv.MMKV.initializeMMKV('.')
 
-    # Basic test data
-    create_test_data()
+    create_basic_data()
 
-    # testing updates of the same key, checking which value it gets
-    create_test_updated_kv_pair()
+    create_overwritten_kv_data()
 
+    create_encrypted_data()
