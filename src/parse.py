@@ -29,4 +29,7 @@ if __name__ == "__main__":
     print(mmkv_parser.decode_as_string(map.get('string_key')[0]))
     print(mmkv_parser.decode_as_bytes(map.get('bytes_key')[0]))
 
+    print(mmkv_parser.decode_as_float(map.get('float_key')[0]))
+
+
 

@@ -70,18 +70,19 @@ class MMKVParser:
         """
 
         # Loop and read key-value pairs into `decoded_map`
-
         db_size = self.get_db_size()
         while self.pos < db_size:
             # parse key
-            key_length, self.pos = pb_reader.decode_varint(self.mmkv_file, self.pos, mask=32)
+            key_length, bytes_read = pb_reader.decode_varint(self.mmkv_file, mask=32)
+            self.pos += bytes_read
             key = self.mmkv_file.read(key_length).decode(encoding='utf-8')
 
             if key == '' and key_length == 0:
                 break
 
             # parse value
-            value_length, self.pos = pb_reader.decode_varint(self.mmkv_file, self.pos, mask=32)
+            value_length, bytes_read = pb_reader.decode_varint(self.mmkv_file, mask=32)
+            self.pos += bytes_read
             value = self.mmkv_file.read(value_length)  # interpretable
 
             # update map
@@ -113,7 +114,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the signed 32-bit int result
         """
-        return pb_reader.decode_signed_varint(BytesIO(value), 0, mask=32)[0]
+        return pb_reader.decode_signed_varint(BytesIO(value), mask=32)[0]
 
     def decode_as_int64(self, value: bytes) -> int:
         """
@@ -122,7 +123,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the signed 64-bit int result
         """
-        return pb_reader.decode_signed_varint(BytesIO(value), 0, mask=64)[0]
+        return pb_reader.decode_signed_varint(BytesIO(value), mask=64)[0]
 
     def decode_as_uint32(self, value: bytes) -> int:
         """
@@ -131,7 +132,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the unsigned 32-bit int result
         """
-        return pb_reader.decode_varint(BytesIO(value), 0, mask=32)[0]
+        return pb_reader.decode_varint(BytesIO(value), mask=32)[0]
 
     def decode_as_uint64(self, value: bytes) -> int:
         """
@@ -140,7 +141,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the unsigned 64-bit int result
         """
-        return pb_reader.decode_varint(BytesIO(value), 0, mask=64)[0]
+        return pb_reader.decode_varint(BytesIO(value), mask=64)[0]
 
     def decode_as_string(self, value: bytes) -> Optional[str]:
         """
@@ -151,7 +152,7 @@ class MMKVParser:
         :return: Returns the UTF-8 decoded string, or None if not possible
         """
         # Strip off the varint length delimiter bytes
-        wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), 0, mask=32)
+        wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), mask=32)
         value = value[wrapper_bytes_len:]
         try:
             return value.decode('utf-8')
@@ -168,9 +169,16 @@ class MMKVParser:
         :return: Returns the bytes
         """
         # Strip off the varint length delimiter bytes
-        wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), 0, mask=32)
+        wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), mask=32)
         value = value[wrapper_bytes_len:]
         return value
 
-    # TODO - floats
+    def decode_as_float(self, value: bytes) -> float:
+        """
+        Decodes `value` as a double (8-bytes), which is a float type in Python.
+
+        :param value: protobuf-encoded bytes value
+        :return: Returns the float result
+        """
+        return struct.unpack('<d', value)[0]
 
