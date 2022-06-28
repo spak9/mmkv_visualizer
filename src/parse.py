@@ -4,7 +4,7 @@ from pathlib import Path
 if __name__ == "__main__":
 
     mmkv_parser = MMKVParser()
-    data_path = Path(__file__).parents[1] / 'data' / 'test_all_types'
+    data_path = Path(__file__).parents[1] / 'data' / 'create_basic_data'
     mmkv_parser.initialize(mmkv_abs_path_name=str(data_path))
     map = mmkv_parser.decode_into_map()
 

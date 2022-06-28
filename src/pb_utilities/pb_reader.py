@@ -1,11 +1,11 @@
 import struct
 import ctypes
 
-from io import BufferedReader
+from io import BufferedIOBase
 from typing import Tuple
 
 
-def decode_varint(buffered_reader: BufferedReader, pos: int, mask: int = 64) -> Tuple[int, int]:
+def decode_varint(buffered_reader: BufferedIOBase, pos: int, mask: int = 64) -> Tuple[int, int]:
     """
     Reads a base-128 varint from `buffered_reader` and returns the positive result of the
     varint and the `pos`, which is the new valid position within `buffered_reader`.
@@ -27,10 +27,10 @@ def decode_varint(buffered_reader: BufferedReader, pos: int, mask: int = 64) -> 
             result &= ((1 << mask) - 1)
             break
 
-    return result, pos
+    return result, pos + result
 
 
-def decode_signed_varint(buffered_reader: BufferedReader, pos: int, mask: int = 64) -> Tuple[int, int]:
+def decode_signed_varint(buffered_reader: BufferedIOBase, pos: int, mask: int = 64) -> Tuple[int, int]:
     """
     Reads a base-128 varint from `buffered_reader` and returns the negative result of the
     varint and the `pos`, which is the new valid position within `buffered_reader`.

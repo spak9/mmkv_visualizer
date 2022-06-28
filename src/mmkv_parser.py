@@ -1,10 +1,11 @@
-from io import BufferedReader, BytesIO
+from io import BufferedIOBase, BytesIO
 from pathlib import Path
 from typing import Optional, List
 from collections import defaultdict
 from pb_utilities import pb_reader
 
 import sys
+import struct
 
 
 class MMKVParser:
@@ -13,12 +14,14 @@ class MMKVParser:
     """
 
     def __init__(self):
-        self.mmkv_file: Optional[BufferedReader] = None
-        self.crc_file: Optional[BufferedReader] = None
+        self.mmkv_file: Optional[BufferedIOBase] = None
+        self.crc_file: Optional[BufferedIOBase] = None
+        self.file_size: Optional[int] = None
+        self.header_bytes: Optional[bytes] = None
         self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
         self.pos = 0
 
-    def initialize(self, mmkv_abs_path_name: str, crc_abs_path_name: str = ''):
+    def initialize(self, mmkv_abs_path_name: str, crc_abs_path_name: str = '') -> None:
         """
         Sets up the mmkv data file and optionally the CRC32 file.
         If crc filename is not given, will attempt to use append ".crc"
@@ -30,7 +33,7 @@ class MMKVParser:
 
         # Check if files exists w.r.t the "data" directory
         # mmkv_file_path = Path.cwd() / 'data' / mmkv_file_name
-        mmkv_file_path = Path(mmkv_abs_path_name)
+        mmkv_file_path: Path = Path(mmkv_abs_path_name)
         if not mmkv_file_path.exists():
             print(f'[+] The following directory does not exist - {mmkv_abs_path_name}')
             sys.exit(-1)
@@ -40,19 +43,36 @@ class MMKVParser:
         # Set up the MMKV File object
         self.mmkv_file = open(mmkv_file_path, 'rb')
 
+        # Check file total size
+        self.file_size = mmkv_file_path.stat().st_size
+        print(f'[+] {mmkv_file_path.name} is {self.file_size} bytes')
+
+        # Read in first 8 header bytes - [0:4] is total size, [4:8] is garbage bytes basically (0xffffff07)
+        self.header_bytes = self.mmkv_file.read(8)
+        self.pos += 8
+
+        return None
+
+    def get_db_size(self) -> int:
+        """
+        Returns the actual size of the MMKV database, that is, the size that the database knows about.
+
+        :return: int size
+        """
+        return struct.unpack('<I', self.header_bytes[0:4])[0]
+
     def decode_into_map(self) -> defaultdict:
         """
         A best-effort approach on linearly parsing the `mmkv_file` BufferedReader
         and build up our `decoded_map`.
+
         :return: our built-up `decoded_map`
         """
 
-        # Skip first 8-bytes of the metadata
-        self.mmkv_file.read(8)
-        self.pos += 8
-
         # Loop and read key-value pairs into `decoded_map`
-        while self.mmkv_file.peek():
+
+        db_size = self.get_db_size()
+        while self.pos < db_size:
             # parse key
             key_length, self.pos = pb_reader.decode_varint(self.mmkv_file, self.pos, mask=32)
             key = self.mmkv_file.read(key_length).decode(encoding='utf-8')
