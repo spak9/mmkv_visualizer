@@ -20,7 +20,8 @@ def decode_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple[int, i
 
     # Check if `buffered_base` has valid bytes
     if not byte:
-        print('[+] buffered_reader has no more bytes to read.')
+        print('[+] buffered_reader has no more bytes to read. Most likely trying to decode'
+              ' data that is not a varint.')
         return -1, -1
 
     # Iterate through `buffered_base` and varint
@@ -37,6 +38,10 @@ def decode_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple[int, i
 
         byte = buffered_base.read(1)
         bytes_read += 1
+        if not byte:
+            print('[+] buffered_reader has no more bytes to read. Most likely trying to decode'
+                  ' data that is not a varint.')
+            return -1, -1
 
     return result, bytes_read
 
@@ -55,10 +60,11 @@ def decode_signed_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple
 
     # Check if `buffered_base` has valid bytes
     if not byte:
-        print('[+] buffered_reader has no more bytes to read.')
+        print('[+] buffered_reader has no more bytes to read. Most likely trying to decode'
+              ' data that is not a varint.')
         return -1, -1
 
-    # Iterate through `buffered_base` and varint
+    # Iterate through `buffered_base`
     while True:
         i = struct.unpack('B', byte)[0]
 
@@ -75,5 +81,9 @@ def decode_signed_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple
 
         byte = buffered_base.read(1)
         bytes_read += 1
+        if not byte:
+            print('[+] buffered_reader has no more bytes to read. Most likely trying to decode'
+                  ' data that is not a varint.')
+            return -1, -1
 
     return result, bytes_read

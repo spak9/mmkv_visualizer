@@ -1,5 +1,8 @@
+from io import BytesIO
+
 from mmkv_parser import MMKVParser
 from pathlib import Path
+from pb_utilities import pb_reader
 
 if __name__ == "__main__":
 
@@ -26,10 +29,14 @@ if __name__ == "__main__":
     print(mmkv_parser.decode_as_bool(map.get('bool_true_key')[0]))
     print(mmkv_parser.decode_as_bool(map.get('bool_false_key')[0]))
 
-    print(mmkv_parser.decode_as_string(map.get('string_key')[0]))
+    print(mmkv_parser.decode_as_uint32(map.get('string_key')[0]))
     print(mmkv_parser.decode_as_bytes(map.get('bytes_key')[0]))
 
     print(mmkv_parser.decode_as_float(map.get('float_key')[0]))
+
+    pb_reader.decode_varint(BytesIO(bytes.fromhex('ff')))
+
+
 
 
 
