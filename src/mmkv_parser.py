@@ -17,25 +17,26 @@ class MMKVParser:
         self.mmkv_file: Optional[BufferedIOBase] = None
         self.crc_file: Optional[BufferedIOBase] = None
         self.file_size: Optional[int] = None
-        self.header_bytes: Optional[bytes] = None
+        self.header_bytes: Optional[bytes] = None           # Should be 8 bytes after initialization
         self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
         self.pos = 0
 
-    def initialize(self, mmkv_abs_path_name: str, crc_abs_path_name: str = '') -> None:
+    def initialize(self, mmkv_file_name: str, crc_file_name: str = '') -> None:
         """
-        Sets up the mmkv data file and optionally the CRC32 file.
-        If crc filename is not given, will attempt to use append ".crc"
+        Sets up the mmkv data file and optionally the CRC32 file. If crc filename is not given,
+        it will attempt to use append ".crc" to the `mmkv_file_name`.
 
-        :param mmkv_abs_path_name: absolute path filename string
-        :param crc_abs_path_name: absolute path filename string
+
+        :param mmkv_file_name: absolute path filename string
+        :param crc_file_name: absolute path filename string
         :return: None
         """
 
         # Check if files exists w.r.t the "data" directory
         # mmkv_file_path = Path.cwd() / 'data' / mmkv_file_name
-        mmkv_file_path: Path = Path(mmkv_abs_path_name)
+        mmkv_file_path: Path = Path(mmkv_file_name)
         if not mmkv_file_path.exists():
-            print(f'[+] The following directory does not exist - {mmkv_abs_path_name}')
+            print(f'[+] The following directory does not exist - {mmkv_file_name}')
             sys.exit(-1)
 
         # TODO - CRC32 check
@@ -53,27 +54,37 @@ class MMKVParser:
 
         return None
 
-    def get_db_size(self) -> int:
+    def get_db_size(self) -> Optional[int]:
         """
         Returns the actual size of the MMKV database, that is, the size that the database knows about.
 
-        :return: int size
+        :return: int size or None on error
         """
+        if not self.header_bytes:
+            raise TypeError('Header bytes is None. Please make sure to successfully initialize() db.')
+
         return struct.unpack('<I', self.header_bytes[0:4])[0]
 
-    def decode_into_map(self) -> defaultdict:
+    def decode_into_map(self) -> Optional[defaultdict]:
         """
         A best-effort approach on linearly parsing the `mmkv_file` BufferedReader
         and build up our `decoded_map`.
 
-        :return: our built-up `decoded_map`
+        :return: our built-up `decoded_map` or None on error
         """
 
         # Loop and read key-value pairs into `decoded_map`
         db_size = self.get_db_size()
+        if not db_size:
+            raise ValueError('Cannot read MMKV datastore size - please make sure you successfully initialize().')
+
         while self.pos < db_size:
             # parse key
             key_length, bytes_read = pb_reader.decode_varint(self.mmkv_file, mask=32)
+            if (key_length, bytes_read) == (-1, -1):
+                print('[+] Ran out of bytes while decoding data into map - stopped parsing')
+                break
+
             self.pos += bytes_read
             key = self.mmkv_file.read(key_length).decode(encoding='utf-8')
 
@@ -82,6 +93,10 @@ class MMKVParser:
 
             # parse value
             value_length, bytes_read = pb_reader.decode_varint(self.mmkv_file, mask=32)
+            if (value_length, bytes_read) == (-1, -1):
+                print('[+] Ran out of bytes while decoding data into map - stopped parsing')
+                break
+
             self.pos += bytes_read
             value = self.mmkv_file.read(value_length)  # interpretable
 
