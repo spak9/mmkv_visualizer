@@ -1,6 +1,6 @@
 from io import BufferedIOBase, BytesIO
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Union
 from collections import defaultdict
 from pb_utilities import pb_reader
 
@@ -21,32 +21,42 @@ class MMKVParser:
         self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
         self.pos = 0
 
-    def initialize(self, mmkv_file_name: str, crc_file_name: str = '') -> None:
+    def initialize(self, mmkv_file: Union[str, bytes], crc_file: Union[str, bytes] = '') -> None:
         """
-        Sets up the mmkv data file and optionally the CRC32 file. If crc filename is not given,
-        it will attempt to use append ".crc" to the `mmkv_file_name`.
+        Initializes the MMKV data file and optionally the CRC32 file.
+        If either parameter is a string, then treat it as a file path, else if its bytes,
+        treat it as the actual binary MMKV data.
 
-
-        :param mmkv_file_name: absolute path filename string
-        :param crc_file_name: absolute path filename string
+        :param mmkv_file: absolute path filename string or bytes data
+        :param crc_file: absolute path filename string or bytes data
         :return: None
         """
 
-        # Check if files exists w.r.t the "data" directory
-        # mmkv_file_path = Path.cwd() / 'data' / mmkv_file_name
-        mmkv_file_path: Path = Path(mmkv_file_name)
-        if not mmkv_file_path.exists():
-            print(f'[+] The following directory does not exist - {mmkv_file_name}')
-            sys.exit(-1)
+        # 1. `mmkv_file` is str
+        if isinstance(mmkv_file, str):
 
-        # TODO - CRC32 check
+            # Check if files exists w.r.t the "data" directory
+            mmkv_file_path: Path = Path(mmkv_file)
+            if not mmkv_file_path.exists():
+                print(f'[+] The following directory does not exist - {mmkv_file}')
+                sys.exit(-1)
 
-        # Set up the MMKV File object
-        self.mmkv_file = open(mmkv_file_path, 'rb')
+            # Set up the MMKV File object
+            self.mmkv_file = open(mmkv_file_path, 'rb')
+
+        # 2. `mmkv_file` is bytes
+        elif isinstance(mmkv_file, bytes):
+
+            # Set up the MMKV File object
+            self.mmkv_file = BytesIO(mmkv_file)
+
+        # 3. `mmkv_file` is not correct type
+        else:
+            raise TypeError(f'mmkv_file is of type {type(mmkv_file)} - should be either str or bytes.')
 
         # Check file total size
-        self.file_size = mmkv_file_path.stat().st_size
-        print(f'[+] {mmkv_file_path.name} is {self.file_size} bytes')
+        # self.file_size = mmkv_file_path.stat().st_size
+        # print(f'[+] {mmkv_file_path.name} is {self.file_size} bytes')
 
         # Read in first 8 header bytes - [0:4] is total size, [4:8] is garbage bytes basically (0xffffff07)
         self.header_bytes = self.mmkv_file.read(8)

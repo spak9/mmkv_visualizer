@@ -4,7 +4,7 @@ that we need to import in `runPython` with Pyodide
 """
 from io import BufferedIOBase, BytesIO
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Union
 from collections import defaultdict
 
 import sys
