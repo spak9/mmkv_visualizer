@@ -12,7 +12,12 @@
         let pyodide = await loadPyodide();
         console.log('[+] Finished setting up Pyodide')
 
-        pyodide.runPython(`
+        let data = await setupParser(pyodide)
+        console.log(data)
+      }
+
+      async function setupParser(pyodide) {
+        let data = pyodide.runPython(`
           # 1. Imports
           from io import BufferedIOBase, BytesIO
           from pathlib import Path
@@ -57,6 +62,10 @@
 
                 byte = buffered_base.read(1)
                 bytes_read += 1
+                if not byte:
+                    print('[+] buffered_reader has no more bytes to read. Most likely trying to decode'
+                          ' data that is not a varint.')
+                    return -1, -1
 
             return result, bytes_read
 
@@ -298,32 +307,13 @@
           mmkv_parser = MMKVParser()
           mmkv_parser.initialize(mmkv_file=bytes.fromhex('''d7000000ffffff0712696e7433325f706f7369746976655f6b657905ffffffff0712696e7433325f6e656761746976655f6b65790a80808080f8ffffffff0112696e7436345f706f7369746976655f6b657909ffffffffffffffff7f12696e7436345f6e656761746976655f6b65790a808080808080808080010d626f6f6c5f747275655f6b657901010e626f6f6c5f66616c73655f6b657901000a737472696e675f6b65790b0a73746576656e2070616b0962797465735f6b65790b0a736f6d6520627974657309666c6f61745f6b6579081f85eb51b81e0940'''))
           print(mmkv_parser.get_db_size())
-          map = mmkv_parser.decode_into_map()
-
-          print(mmkv_parser.decode_as_int32(map.get('int32_positive_key')[0]))
-          print(mmkv_parser.decode_as_uint32(map.get('int32_positive_key')[0]))
-
-          print(mmkv_parser.decode_as_int32(map.get('int32_negative_key')[0]))
-          print(mmkv_parser.decode_as_uint32(map.get('int32_negative_key')[0]))
-
-          print(mmkv_parser.decode_as_int64(map.get('int64_positive_key')[0]))
-          print(mmkv_parser.decode_as_uint64(map.get('int64_positive_key')[0]))
-
-          print(mmkv_parser.decode_as_int64(map.get('int64_negative_key')[0]))
-          print(mmkv_parser.decode_as_uint64(map.get('int64_negative_key')[0]))
-
-          print(mmkv_parser.decode_as_bool(map.get('bool_true_key')[0]))
-          print(mmkv_parser.decode_as_bool(map.get('bool_false_key')[0]))
-
-          print(mmkv_parser.decode_as_uint32(map.get('string_key')[0]))
-          print(mmkv_parser.decode_as_bytes(map.get('bytes_key')[0]))
-
-          print(mmkv_parser.decode_as_float(map.get('float_key')[0]))
-
+          mmkv_parser.decode_into_map()
         `);
+
+        return data
       }
 
-      let pyodide = setupPyodide()
+      setupPyodide()
 
     </script>
   </body>

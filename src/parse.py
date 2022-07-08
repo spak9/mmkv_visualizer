@@ -11,9 +11,6 @@ if __name__ == "__main__":
     mmkv_parser.initialize(mmkv_file=str(data_path))
     map = mmkv_parser.decode_into_map()
 
-    for key, value in map.items():
-        print(f'key: {key} - value: {value}')
-
     print(mmkv_parser.decode_as_int32(map.get('int32_positive_key')[0]))
     print(mmkv_parser.decode_as_uint32(map.get('int32_positive_key')[0]))
 
@@ -34,7 +31,9 @@ if __name__ == "__main__":
 
     print(mmkv_parser.decode_as_float(map.get('float_key')[0]))
 
-    pb_reader.decode_varint(BytesIO(bytes.fromhex('ff')))
+    values = map.values()
+    for value in values:
+        print(str(value[0]))
 
 
 
