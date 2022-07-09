@@ -2,15 +2,18 @@
 <html>
   <head>
       <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
+      <script type="text/javascript" src="parse.js"></script>
   </head>
   <body>
-    <h1>Pyodide test page</h1>
-    Open your browser console to see Pyodide output
-    <script type="text/javascript" src="parse.js">
+    <h1>MMKV Visualizer</h1>
 
+    <div id="main-content">
+      <p>Open your browser console to see Pyodide output</p>
+      <p>Some example text</p>
+      <div>Example div</div>
+    </div>
 
-    </script>
+    <input type="button" onclick="processData()" value="Run MMKV Parser">
 
-  <input type="button" onclick="processData()" value="Run MMKV Parser">
   </body>
 </html>
