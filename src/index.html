@@ -1,8 +1,24 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
-      <script type="text/javascript" src="parse.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
+    <script type="text/javascript" src="parse.js"></script>
+    <style>
+      body {
+        box-sizing: border-box;
+      }
+      .flex-container {
+        display: flex;
+      }
+      .box {
+        background-color: blue;
+        border-width: 5px;
+        border-style: solid;
+        width: 200px;
+        height: 200px;
+        margin: 20px;
+      }
+    </style>
   </head>
   <body>
     <h1>MMKV Visualizer</h1>
@@ -11,6 +27,14 @@
       <p>Open your browser console to see Pyodide output</p>
       <p>Some example text</p>
       <div>Example div</div>
+    </div>
+
+    <div class="flex-container">
+      <div class="box box1">1</div>
+      <div class="box box2">2</div>
+      <div class="box box3">3</div>
+      <div class="box box4">4</div>
+      <div class="box box5">5</div>
     </div>
 
     <input type="button" onclick="processData()" value="Run MMKV Parser">
