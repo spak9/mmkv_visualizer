@@ -14,7 +14,6 @@ async function setupPyodide() {
     Processes
 */
 async function processData(inputHexString){
-
     let pyodide = await pyodidePromise
     parseData(pyodide, inputHexString)
 }

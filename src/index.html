@@ -4,40 +4,53 @@
     <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
     <script type="text/javascript" src="parse.js"></script>
     <style>
-      body {
+      * {
         box-sizing: border-box;
       }
-      .flex-container {
+      .whole-page {
         display: flex;
+        flex-direction: column;
+        height: 100vh;
       }
-      .box {
-        background-color: blue;
-        border-width: 5px;
-        border-style: solid;
-        width: 200px;
-        height: 200px;
-        margin: 20px;
+      .whole-page > * {
+        padding: 20px;
+      }
+      .page-header {
+        display: flex;
+        flex-direction: row;
+        background-color: #ff7e74;
+      }
+      .page-main {
+        flex-grow: 1;
+        background-color: #ffe596;
+      }
+      .page-footer{
+        background-color: #81d76d;
       }
     </style>
   </head>
   <body>
-    <h1>MMKV Visualizer</h1>
+  <!-- Overarching flex container for the entire page-->
+    <div class="whole-page">
 
-    <div id="main-content">
-      <p>Open your browser console to see Pyodide output</p>
-      <p>Some example text</p>
-      <div>Example div</div>
+      <!-- Header -->
+      <div class="page-header">
+
+      </div>
+
+      <!-- Main -->
+      <div class="page-main">
+
+      </div>
+
+      <!-- Footer -->
+      <div class="page-footer">
+
+      </div>
     </div>
 
-    <div class="flex-container">
-      <div class="box box1">1</div>
-      <div class="box box2">2</div>
-      <div class="box box3">3</div>
-      <div class="box box4">4</div>
-      <div class="box box5">5</div>
-    </div>
 
-    <input type="button" onclick="processData()" value="Run MMKV Parser">
+  <!--    <input type="button" onclick="processData()" value="Run MMKV Parser">-->
 
   </body>
 </html>
