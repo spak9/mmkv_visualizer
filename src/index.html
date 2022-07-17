@@ -4,53 +4,92 @@
     <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
     <script type="text/javascript" src="parse.js"></script>
     <style>
+      .github-icon{
+        all:revert;
+        margin-left:auto;
+        width:16px;
+        height:16px;
+        fill:#8EA29E;
+        transition: fill .3s;
+      }
+      .github-icon:hover {
+          background:none;
+          fill:#6e5494;
+      }
       * {
         box-sizing: border-box;
       }
-      .whole-page {
+      body {
         display: flex;
         flex-direction: column;
         height: 100vh;
+        width: 60vw;
+        margin: auto;
       }
-      .whole-page > * {
-        padding: 20px;
-      }
+
       .page-header {
+        flex: 1;
         display: flex;
+        justify-content: space-between;
         flex-direction: row;
         background-color: #ff7e74;
       }
       .page-main {
-        flex-grow: 1;
+        flex: 3;
+
+        display: flex;
+        flex-direction: row;
         background-color: #ffe596;
       }
       .page-footer{
+        flex: 1;
+
+        display: flex;
+        flex-direction: column;
         background-color: #81d76d;
+      }
+      .page-header > * {
+        padding: 16px;
+      }
+      .nav-intro {
+        flex: 0 1 50%;
+      }
+      .nav-links {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex: 1 0 25%;
       }
     </style>
   </head>
   <body>
-  <!-- Overarching flex container for the entire page-->
-    <div class="whole-page">
 
-      <!-- Header -->
-      <div class="page-header">
+    <!-- Header -->
+    <nav class="page-header">
+      <div class="nav-intro">
+        <h1>
+          MMKV Visualizer
+        </h1>
+        <p>View MMKV databases online - completely transparent & privateView MMKV databases online - completely transparent & private</p>
+      </div>
+      <div class="nav-links">
+        <a class="link">
 
+        </a>
       </div>
 
-      <!-- Main -->
-      <div class="page-main">
+    </nav>
 
-      </div>
-
-      <!-- Footer -->
-      <div class="page-footer">
-
+    <!-- Main -->
+    <div class="page-main">
+      <div>
+        <input type="button" onclick="processData()" value="Run MMKV Parser">
       </div>
     </div>
 
+    <!-- Footer -->
+    <div class="page-footer">
 
-  <!--    <input type="button" onclick="processData()" value="Run MMKV Parser">-->
-
+    </div>
   </body>
 </html>
