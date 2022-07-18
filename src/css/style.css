@@ -2,11 +2,14 @@
     box-sizing: border-box;
 }
 body {
+    color: #ecebf3;
+    background-color: #0c120c;
     display: flex;
     flex-direction: column;
     height: 100vh;
     width: 60vw;
     margin: auto;
+    font-family: Helvetica, sans-serif;
 }
 .page-header {
     flex: 1;
@@ -18,13 +21,12 @@ body {
     flex: 4;
     display: flex;
     flex-direction: row;
-    background-color: #ffe596;
+    background-color: #c7d6d5;
 }
 .page-footer{
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #81d76d;
 }
 .page-header > * {
     padding: 16px;
@@ -43,7 +45,7 @@ body {
 .github-link{
     width: 32px;
     height: 28px;
-    fill:black;
+    fill:#ecebf3;
     transition: fill .3s;
 }
 .github-link:hover {
