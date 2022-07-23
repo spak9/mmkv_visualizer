@@ -2,8 +2,8 @@
     box-sizing: border-box;
 }
 body {
-    color: #ecebf3;
-    background-color: #0c120c;
+    color: black;
+    background-color: #f7f7f2;
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -21,7 +21,9 @@ body {
     flex: 4;
     display: flex;
     flex-direction: row;
-    background-color: #c7d6d5;
+    border-style: dashed;
+    border-width: 2px;
+    border-radius: 16px;
 }
 .page-footer{
     flex: 1;
@@ -45,7 +47,7 @@ body {
 .github-link{
     width: 32px;
     height: 28px;
-    fill:#ecebf3;
+    fill: black;
     transition: fill .3s;
 }
 .github-link:hover {
