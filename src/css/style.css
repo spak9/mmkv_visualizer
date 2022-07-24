@@ -20,10 +20,24 @@ body {
 .page-main {
     flex: 4;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     border-style: dashed;
     border-width: 2px;
     border-radius: 16px;
+}
+.main-buttons{
+    display: flex;
+    flex-wrap: wrap;
+}
+.main-buttons > * {
+    padding: 10px;
+    background: #ccc;
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin: 8px;
 }
 .page-footer{
     flex: 1;

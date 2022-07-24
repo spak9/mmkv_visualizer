@@ -25,10 +25,12 @@
 
     <!-- Main -->
     <div class="page-main">
-      <p class="p1" draggable="true">Draggable Element</p>
-
-<!--        <input class="dd" type="button" onclick="processData()" value="Run MMKV Parser">-->
-
+      <p>Drag & drop or select an MMKV file to visualize</p>
+      <div class="main-buttons">
+        <label for="mmkv-input">Open File</label>
+        <input type="file" id="mmkv-input" multiple hidden>
+        <button>Open Sample Data</button>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -36,33 +38,7 @@
 
     </div>
     <script>
-      console.log('asdf')
-      let p1 = document.querySelector('.p1')
 
-      // Make footer a "dropzone"
-      // 1. ondragover 2. ondrop
-      let footer = document.querySelector('.page-footer')
-      footer.addEventListener('dragover', function(event) {
-        console.log('Drag Over')
-        event.preventDefault()
-      })
-
-      footer.addEventListener('drop', function(event) {
-        console.log('Drop')
-        event.preventDefault()
-        // Get data from "draggable" element and create new element
-        let data = event.dataTransfer.getData('text/plain')
-        let p2 = document.createElement('p')
-        p2.innerText = data
-        console.log(event.target)
-        event.target.appendChild(p2)
-      })
-
-      p1.addEventListener('dragstart', function(event) {
-        console.log('dragstart')
-        event.dataTransfer.dropEffect = 'move'
-        event.dataTransfer.setData('text/plain', event.target.innerText)
-      })
     </script>
   </body>
 </html>
