@@ -333,3 +333,39 @@ function parseData(pyodide, inputHexString) {
 
 // Run script - setup global "loadPyodide" Promise, which then can be used in async functions
 let pyodidePromise = setupPyodide()
+
+let pageMain = document.querySelector('.page-main')
+
+function onDragover(event) {
+    console.log('On Dragover for page-main')
+    event.preventDefault()
+}
+function onDrop(event){
+    console.log('On Drop for page-main')
+    event.preventDefault()
+
+//    if (event.dataTransfer.items) {
+//        console.log(event.dataTransfer.items)
+//    }
+}
+
+function highlight() {
+    pageMain.classList.add('highlight')
+}
+function unhighlight() {
+    pageMain.classList.remove('highlight')
+}
+function handleFiles() {
+
+}
+
+pageMain.addEventListener('drop', onDrop)
+pageMain.addEventListener('dragover', onDragover)
+
+;['dragenter', 'dragover'].forEach(function(eventName) {
+    pageMain.addEventListener(eventName, highlight)
+})
+;['dragleave', 'drop'].forEach(function(eventName) {
+    pageMain.addEventListener(eventName, unhighlight)
+})
+
