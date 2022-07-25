@@ -22,7 +22,9 @@ async function processData(inputHexString){
     Processes an input hex string that represents the MMKV data, parses it according to the
     MMKV protocol, eventually receiving native JavaScript "Map" of type {str: Array[UInt8Array]}
 */
-function parseData(pyodide, inputHexString) {
+async function parseData() {
+    let pyodide = await loadPyodide();
+    console.log('[+] Finished setting up Pyodide')
 
     // Run the MMKVParse python code and parse data, storing the "PyProxy" result in "pyProxy"
     let pyProxy = pyodide.runPython(`
@@ -137,15 +139,7 @@ function parseData(pyodide, inputHexString) {
 
           # 1. 'mmkv_file' is str
           if isinstance(mmkv_file, str):
-
-              # Check if files exists w.r.t the "data" directory
-              mmkv_file_path: Path = Path(mmkv_file)
-              if not mmkv_file_path.exists():
-                  print(f'[+] The following directory does not exist - {mmkv_file}')
-                  sys.exit(-1)
-
-              # Set up the MMKV File object
-              self.mmkv_file = open(mmkv_file_path, 'rb')
+              self.mmkv_file = BytesIO(bytes.fromhex(mmkv_file))
 
           # 2. 'mmkv_file' is bytes
           elif isinstance(mmkv_file, bytes):
@@ -312,27 +306,41 @@ function parseData(pyodide, inputHexString) {
             return struct.unpack('<d', value)[0]
 
       mmkv_parser = MMKVParser()
-      mmkv_parser.initialize(mmkv_file=bytes.fromhex('''d7000000ffffff0712696e7433325f706f7369746976655f6b657905ffffffff0712696e7433325f6e656761746976655f6b65790a80808080f8ffffffff0112696e7436345f706f7369746976655f6b657909ffffffffffffffff7f12696e7436345f6e656761746976655f6b65790a808080808080808080010d626f6f6c5f747275655f6b657901010e626f6f6c5f66616c73655f6b657901000a737472696e675f6b65790b0a73746576656e2070616b0962797465735f6b65790b0a736f6d6520627974657309666c6f61745f6b6579081f85eb51b81e0940'''))
-      print(mmkv_parser.get_db_size())
-      mmkv_parser.decode_into_map()
+      mmkv_parser
     `);
 
     // Convert our "PyProxy" object into a native JavaScript "Map"
-    let mmkvMap = pyProxy.toJs()
-    console.log(mmkvMap)
-    console.log('[+] Converted PyProxy object to JavaScript "Map" type.')
+    return pyProxy.toJs()
+    // console.log(mmkvMap)
+    // console.log('[+] Converted PyProxy object to JavaScript "Map" type.')
 
-    // Decode values at UTF-8
-    let textDecoder = new TextDecoder()
-    for (const [key, value] of mmkvMap.entries()) {
-        console.log(value[0].constructor.name)
-        console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
-    }
+    // // Decode values at UTF-8
+    // let textDecoder = new TextDecoder()
+    // for (const [key, value] of mmkvMap.entries()) {
+    //     console.log(value[0].constructor.name)
+    //     console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
+    // }
 
 }
 
 // Run script - setup global "loadPyodide" Promise, which then can be used in async functions
-let pyodidePromise = setupPyodide()
+//let pyodidePromise = setupPyodide()
+//console.log(pyodidePromise)
+
+let mmkvParser = null;
+
+parseData()
+    .then(parser => {
+        mmkvParser = parser
+        console.log('assigned')
+
+    })
+    .catch(err => {
+        console.log('error')
+    })
+
+console.log('Parser')
+console.log(mmkvParser)
 
 let pageMain = document.querySelector('.page-main')
 
@@ -344,9 +352,27 @@ function onDrop(event){
     console.log('On Drop for page-main')
     event.preventDefault()
 
-//    if (event.dataTransfer.items) {
-//        console.log(event.dataTransfer.items)
-//    }
+   if (event.dataTransfer.files) {
+    let mmkvFile = event.dataTransfer.files[0]
+
+    // File --> ArrayBuffer --> Uint8Array --> Hex String
+
+    let dd = mmkvFile.arrayBuffer().then(data => {
+        let hexString = hex(data)
+        console.log(hexString)
+        mmkvParser.initialize(hexString)
+        let mapProxy = mmkvParser.decode_into_map()
+        mapProxy = mapProxy.toJs()
+        console.log()
+        // Decode values at UTF-8
+        let textDecoder = new TextDecoder()
+        for (const [key, value] of mapProxy.entries()) {
+        console.log(value[0].constructor.name)
+        console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
+    }
+    })
+   }
+
 }
 
 function highlight() {
@@ -355,7 +381,8 @@ function highlight() {
 function unhighlight() {
     pageMain.classList.remove('highlight')
 }
-function handleFiles() {
+
+function handleFile() {
 
 }
 
@@ -368,4 +395,40 @@ pageMain.addEventListener('dragover', onDragover)
 ;['dragleave', 'drop'].forEach(function(eventName) {
     pageMain.addEventListener(eventName, unhighlight)
 })
+
+
+
+const byteToHex = [];
+
+for (let n = 0; n <= 0xff; ++n)
+{
+    const hexOctet = n.toString(16).padStart(2, "0");
+    byteToHex.push(hexOctet);
+}
+
+function hex(arrayBuffer)
+{
+    const buff = new Uint8Array(arrayBuffer);
+    const hexOctets = []; // new Array(buff.length) is even faster (preallocates necessary array size), then use hexOctets[i] instead of .push()
+
+    for (let i = 0; i < buff.length; ++i)
+        hexOctets.push(byteToHex[buff[i]]);
+
+    return hexOctets.join("");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
