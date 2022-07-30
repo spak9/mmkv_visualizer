@@ -6,7 +6,7 @@
 //
 let mmkvParser = null;
 
-// Set up our hex conversation function
+// Set up our hex conversation function - creates an array of incrementing hex values
 const byteToHex = [];
 for (let n = 0; n <= 0xff; ++n)
 {
@@ -29,81 +29,10 @@ function toHexString(arrayBuffer)
     return hexOctets.join("");
 }
 
-
-//
-// Application State
-//
-
-
-//
-// DOM Node References & updates
-//
-let $pageMain = document.querySelector('.page-main')
-
-function highlight() {
-   $pageMain.classList.add('highlight')
-}
-function unhighlight() {
-   $pageMain.classList.remove('highlight')
-}
-
-
-
-//
-// Event Listener Callbacks
-//
-
 /**
- * Callback for when dragging over the `page-main` element.
- * Should only preventDefault behavior
+ * Asynchronously creates an `MMKVParser` instance in python and returns it as 
+ * a `PyProxy` instance in JavaScript, now able to have functions called upon it.
  */
-function onDragover(event) {
-    console.log('On Dragover for page-main')
-    event.preventDefault()
-}
-function onDrop(event){
-    console.log('On Drop for page-main')
-    event.preventDefault()
-
-   if (event.dataTransfer.files) {
-    let mmkvFile = event.dataTransfer.files[0]
-
-    // File --> ArrayBuffer --> Uint8Array --> Hex String
-
-    let dd = mmkvFile.arrayBuffer().then(data => {
-        let hexString = toHexString(data)
-        console.log(hexString)
-        mmkvParser.initialize(hexString)
-        let mapProxy = mmkvParser.decode_into_map()
-        mapProxy = mapProxy.toJs()
-        console.log()
-        // Decode values at UTF-8
-        let textDecoder = new TextDecoder()
-        for (const [key, value] of mapProxy.entries()) {
-        console.log(value[0].constructor.name)
-        console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
-    }
-    })
-   }
-
-}
-function handleFile() {
-
-}
-
-
-$pageMain.addEventListener('drop', onDrop)
-$pageMain.addEventListener('dragover', onDragover)
-
-;['dragenter', 'dragover'].forEach(function(eventName) {
-   $pageMain.addEventListener(eventName, highlight)
-})
-;['dragleave', 'drop'].forEach(function(eventName) {
-   $pageMain.addEventListener(eventName, unhighlight)
-})
-
-
-
 async function getMMKVParser() {
     let pyodide = await loadPyodide();
     console.log('[+] Finished setting up Pyodide')
@@ -391,9 +320,95 @@ async function getMMKVParser() {
       mmkv_parser
     `);
 
-    // Convert our "PyProxy" object into a native JavaScript "Map"
+    // Convert our MMKVParser into a `PyProxy`
     return pyProxy.toJs()
 }
+
+
+//
+// Application State
+//
+
+
+//
+// DOM Node References & updates
+//
+let $pageMain = document.querySelector('.page-main')
+let $mmkvInput = document.querySelector('#mmkv-input')
+
+function highlight() {
+   $pageMain.classList.add('highlight')
+}
+function unhighlight() {
+   $pageMain.classList.remove('highlight')
+}
+
+
+
+//
+// Event Listener Callbacks
+//
+
+/**
+ * Callback for when dragging over the `page-main` element.
+ * Should only preventDefault behavior.
+ */
+function onDragover(event) {
+    console.log('[+] onDragover called')
+    event.preventDefault()
+}
+function onDrop(event){
+    console.log('[+] onDrop called')
+    event.preventDefault()
+
+   if (event.dataTransfer.files) {
+
+    // TODO: Will need to update this to handle CRC check, taking 2 files in.
+    // Get the first file (mmkv file)
+    let mmkvFile = event.dataTransfer.files[0]
+
+    // File --> ArrayBuffer --> Uint8Array --> Hex String
+
+    let dd = mmkvFile.arrayBuffer().then(data => {
+        let hexString = toHexString(data)
+        console.log(hexString)
+        mmkvParser.initialize(hexString)
+        let mapProxy = mmkvParser.decode_into_map()
+        mapProxy = mapProxy.toJs()
+        console.log()
+        // Decode values at UTF-8
+        let textDecoder = new TextDecoder()
+        for (const [key, value] of mapProxy.entries()) {
+        console.log(value[0].constructor.name)
+        console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
+        }
+    })
+    }
+}
+function onChange(event) {
+    console.log('[+] onChange called')
+
+    // TODO: Will need to update this to handle CRC check, taking 2 files in.
+    // Get the first file (mmkv file)
+    const mmkvFile = $mmkvInput.files[0]
+    console.log(mmkvFile)
+
+}
+function handleFile() {
+
+}
+
+
+$mmkvInput.addEventListener('change', onChange)
+$pageMain.addEventListener('drop', onDrop)
+$pageMain.addEventListener('dragover', onDragover)
+
+;['dragenter', 'dragover'].forEach(function(eventName) {
+   $pageMain.addEventListener(eventName, highlight)
+})
+;['dragleave', 'drop'].forEach(function(eventName) {
+   $pageMain.addEventListener(eventName, unhighlight)
+})
 
 
 /**
