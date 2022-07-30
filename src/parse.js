@@ -1,28 +1,110 @@
+// Written by Steven Pak
 
-/*
-    Sets up the global python environment and should be run upon page load.
-    Returns our "pyodide" instance.
-*/
-async function setupPyodide() {
-    let pyodide = await loadPyodide();
-    console.log('[+] Finished setting up Pyodide')
-    return pyodide
+
+//
+// Constants and helper functions
+//
+let mmkvParser = null;
+
+// Set up our hex conversation function
+const byteToHex = [];
+for (let n = 0; n <= 0xff; ++n)
+{
+    const hexOctet = n.toString(16).padStart(2, "0");
+    byteToHex.push(hexOctet);
+}
+
+/**
+ * Converts `arrayBuffer` into a hexlified string.
+ * @param {ArrayBuffer} arrayBuffer The ArrayBuffer to convert to a hexlified string
+ */
+function toHexString(arrayBuffer)
+{
+    const buff = new Uint8Array(arrayBuffer);
+    const hexOctets = []; // new Array(buff.length) is even faster (preallocates necessary array size), then use hexOctets[i] instead of .push()
+
+    for (let i = 0; i < buff.length; ++i)
+        hexOctets.push(byteToHex[buff[i]]);
+
+    return hexOctets.join("");
 }
 
 
-/*
-    Processes
-*/
-async function processData(inputHexString){
-    let pyodide = await pyodidePromise
-    parseData(pyodide, inputHexString)
+//
+// Application State
+//
+
+
+//
+// DOM Node References & updates
+//
+let $pageMain = document.querySelector('.page-main')
+
+function highlight() {
+   $pageMain.classList.add('highlight')
+}
+function unhighlight() {
+   $pageMain.classList.remove('highlight')
 }
 
-/*
-    Processes an input hex string that represents the MMKV data, parses it according to the
-    MMKV protocol, eventually receiving native JavaScript "Map" of type {str: Array[UInt8Array]}
-*/
-async function parseData() {
+
+
+//
+// Event Listener Callbacks
+//
+
+/**
+ * Callback for when dragging over the `page-main` element.
+ * Should only preventDefault behavior
+ */
+function onDragover(event) {
+    console.log('On Dragover for page-main')
+    event.preventDefault()
+}
+function onDrop(event){
+    console.log('On Drop for page-main')
+    event.preventDefault()
+
+   if (event.dataTransfer.files) {
+    let mmkvFile = event.dataTransfer.files[0]
+
+    // File --> ArrayBuffer --> Uint8Array --> Hex String
+
+    let dd = mmkvFile.arrayBuffer().then(data => {
+        let hexString = toHexString(data)
+        console.log(hexString)
+        mmkvParser.initialize(hexString)
+        let mapProxy = mmkvParser.decode_into_map()
+        mapProxy = mapProxy.toJs()
+        console.log()
+        // Decode values at UTF-8
+        let textDecoder = new TextDecoder()
+        for (const [key, value] of mapProxy.entries()) {
+        console.log(value[0].constructor.name)
+        console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
+    }
+    })
+   }
+
+}
+function handleFile() {
+
+}
+
+
+$pageMain.addEventListener('drop', onDrop)
+$pageMain.addEventListener('dragover', onDragover)
+
+;['dragenter', 'dragover'].forEach(function(eventName) {
+   $pageMain.addEventListener(eventName, highlight)
+})
+;['dragleave', 'drop'].forEach(function(eventName) {
+   $pageMain.addEventListener(eventName, unhighlight)
+})
+
+
+
+async function getMMKVParser() {
     let pyodide = await loadPyodide();
     console.log('[+] Finished setting up Pyodide')
 
@@ -311,124 +393,25 @@ async function parseData() {
 
     // Convert our "PyProxy" object into a native JavaScript "Map"
     return pyProxy.toJs()
-    // console.log(mmkvMap)
-    // console.log('[+] Converted PyProxy object to JavaScript "Map" type.')
-
-    // // Decode values at UTF-8
-    // let textDecoder = new TextDecoder()
-    // for (const [key, value] of mmkvMap.entries()) {
-    //     console.log(value[0].constructor.name)
-    //     console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
-    // }
-
 }
 
-// Run script - setup global "loadPyodide" Promise, which then can be used in async functions
-//let pyodidePromise = setupPyodide()
-//console.log(pyodidePromise)
 
-let mmkvParser = null;
-
-parseData()
+/**
+ * 
+ * The start of this script - asynchronously call "getMMKVParser" and update our global 
+ * `mmkvParser` instance when Promise is finished.
+ * 
+ */
+getMMKVParser()
     .then(parser => {
         mmkvParser = parser
-        console.log('assigned')
+        console.log(`[+] Assigned MMKVParser - mmkvParser is ${mmkvParser}`)
 
     })
     .catch(err => {
-        console.log('error')
+        console.log('[+] Error in assigning mmkvParser')
     })
 
-console.log('Parser')
-console.log(mmkvParser)
-
-let pageMain = document.querySelector('.page-main')
-
-function onDragover(event) {
-    console.log('On Dragover for page-main')
-    event.preventDefault()
-}
-function onDrop(event){
-    console.log('On Drop for page-main')
-    event.preventDefault()
-
-   if (event.dataTransfer.files) {
-    let mmkvFile = event.dataTransfer.files[0]
-
-    // File --> ArrayBuffer --> Uint8Array --> Hex String
-
-    let dd = mmkvFile.arrayBuffer().then(data => {
-        let hexString = hex(data)
-        console.log(hexString)
-        mmkvParser.initialize(hexString)
-        let mapProxy = mmkvParser.decode_into_map()
-        mapProxy = mapProxy.toJs()
-        console.log()
-        // Decode values at UTF-8
-        let textDecoder = new TextDecoder()
-        for (const [key, value] of mapProxy.entries()) {
-        console.log(value[0].constructor.name)
-        console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
-    }
-    })
-   }
-
-}
-
-function highlight() {
-    pageMain.classList.add('highlight')
-}
-function unhighlight() {
-    pageMain.classList.remove('highlight')
-}
-
-function handleFile() {
-
-}
-
-pageMain.addEventListener('drop', onDrop)
-pageMain.addEventListener('dragover', onDragover)
-
-;['dragenter', 'dragover'].forEach(function(eventName) {
-    pageMain.addEventListener(eventName, highlight)
-})
-;['dragleave', 'drop'].forEach(function(eventName) {
-    pageMain.addEventListener(eventName, unhighlight)
-})
-
-
-
-const byteToHex = [];
-
-for (let n = 0; n <= 0xff; ++n)
-{
-    const hexOctet = n.toString(16).padStart(2, "0");
-    byteToHex.push(hexOctet);
-}
-
-function hex(arrayBuffer)
-{
-    const buff = new Uint8Array(arrayBuffer);
-    const hexOctets = []; // new Array(buff.length) is even faster (preallocates necessary array size), then use hexOctets[i] instead of .push()
-
-    for (let i = 0; i < buff.length; ++i)
-        hexOctets.push(byteToHex[buff[i]]);
-
-    return hexOctets.join("");
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+console.log(`[+] Script has loaded up - mmkvParser is ${mmkvParser}`)
 
 
