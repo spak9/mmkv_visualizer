@@ -5,6 +5,7 @@
 // Constants and helper functions
 //
 let mmkvParser = null;
+let mmkvMap = null;
 
 // Set up our hex conversation function - creates an array of incrementing hex values
 const byteToHex = [];
@@ -357,45 +358,64 @@ function onDragover(event) {
     console.log('[+] onDragover called')
     event.preventDefault()
 }
-function onDrop(event){
+
+/**
+ * Callback for when user fully drops a file upon a valid drop zone. 
+ * Encodes `File` into a hex string, which is then used to `initialize()` the `mmkvParser` instance.
+ * 
+ * Returns native JavaScript "Map[String: Array[Uint8Array]]"
+ */
+async function onDrop(event){
     console.log('[+] onDrop called')
     event.preventDefault()
 
-   if (event.dataTransfer.files) {
+    if (event.dataTransfer.files) {
 
-    // TODO: Will need to update this to handle CRC check, taking 2 files in.
-    // Get the first file (mmkv file)
-    let mmkvFile = event.dataTransfer.files[0]
-
-    // File --> ArrayBuffer --> Uint8Array --> Hex String
-
-    let dd = mmkvFile.arrayBuffer().then(data => {
-        let hexString = toHexString(data)
-        console.log(hexString)
-        mmkvParser.initialize(hexString)
-        let mapProxy = mmkvParser.decode_into_map()
-        mapProxy = mapProxy.toJs()
-        console.log()
-        // Decode values at UTF-8
-        let textDecoder = new TextDecoder()
-        for (const [key, value] of mapProxy.entries()) {
-        console.log(value[0].constructor.name)
-        console.log(`Key: ${key}; Value: ${textDecoder.decode(value[0]) }`)
-        }
-    })
+        // TODO: Will need to update this to handle CRC check, taking 2 files in.
+        // Get the first file (mmkv file)
+        let mmkvFile = event.dataTransfer.files[0]
+        await fileToMMKVMap(mmkvFile)
+        console.log(mmkvMap)
     }
 }
-function onChange(event) {
+
+/**
+ * Callback for when user successfully chooses a single file from their filesystem. 
+ * Encodes `File` into a hex string, which is then used to `initialize()` the `mmkvParser` instance.
+ * 
+ * Returns native JavaScript "Map[String: Array[Uint8Array]]"
+ */
+async function onChange(event) {
     console.log('[+] onChange called')
 
     // TODO: Will need to update this to handle CRC check, taking 2 files in.
     // Get the first file (mmkv file)
-    const mmkvFile = $mmkvInput.files[0]
-    console.log(mmkvFile)
-
+    let mmkvFile = $mmkvInput.files[0]
+    await fileToMMKVMap(mmkvFile)
+    console.log(mmkvMap)
 }
-function handleFile() {
 
+/**
+ * Turns `mmkvFile` into a native JavaScript "Map[String: Array[Uint8Array]]"
+ * @param {mmkvFile} mmkvFile The File to convert to a Map
+ * 
+ * Returns native JavaScript "Map[String: Array[Uint8Array]]"
+ */
+async function fileToMMKVMap(mmkvFile) {
+    // File --> ArrayBuffer --> Uint8Array --> Hex String
+    let data = await mmkvFile.arrayBuffer()
+
+    let hexString = toHexString(data)
+
+    // Initialize our mmkvParser with hex string
+    mmkvParser.initialize(hexString)
+
+    // Decode the data into a PyProxty (`dict[list[bytes]]`)
+    let mapProxy = mmkvParser.decode_into_map()
+
+    // Convert the `PyProxy` to its native JavaScript type and update our global `mmkvMap`
+    mmkvMap = mapProxy.toJs()
+    
 }
 
 
@@ -414,7 +434,7 @@ $pageMain.addEventListener('dragover', onDragover)
 /**
  * 
  * The start of this script - asynchronously call "getMMKVParser" and update our global 
- * `mmkvParser` instance when Promise is finished.
+ * `mmkvParser` instance when Promise is completed.
  * 
  */
 getMMKVParser()
