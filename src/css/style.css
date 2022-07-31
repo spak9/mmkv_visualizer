@@ -9,7 +9,7 @@ body {
     height: 100vh;
     width: 60vw;
     margin: auto;
-    font-family: Helvetica, sans-serif;
+    font-family: sans-serif;
 }
 .page-header {
     flex: 1;

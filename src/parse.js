@@ -413,7 +413,7 @@ async function fileToMMKVMap(mmkvFile) {
     // Decode the data into a PyProxty (`dict[list[bytes]]`)
     let mapProxy = mmkvParser.decode_into_map()
 
-    // Convert the `PyProxy` to its native JavaScript type and update our global `mmkvMap`
+    // Convert the `PyProxy` to its native JavaScript type and update our global ``
     mmkvMap = mapProxy.toJs()
     
 }
