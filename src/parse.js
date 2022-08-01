@@ -348,6 +348,40 @@ function emptyPageMain() {
     $pageMainButtons.style.display = "none"
     $pageMainButtons.previousElementSibling.style.display = "none"
 }
+function createDataTable(){
+    let textDecoder = new TextDecoder()
+    let table = document.createElement('table')
+
+    let keyHeaderCell = document.createElement('th')
+    keyHeaderCell.innerHTML = "Keys"
+    let valueHeaderCell = document.createElement('th')
+    valueHeaderCell.innerHTML = "Values"
+    valueHeaderCell.setAttribute('colspan', '100%')
+    table.append(keyHeaderCell)
+    table.append(valueHeaderCell)
+
+    // Iterate through `mmkvMap`, which is Map[String: Array[Uint8Array]].
+    // Create rows per iteration
+    for (const [stringKey, arrayValue] of mmkvMap.entries()) {
+        let row = document.createElement('tr')
+
+        // Create our key cell
+        let key = document.createElement('td')
+        key.innerHTML = stringKey
+
+        row.append(key)
+
+        // Iterate through Array of Uint8Array values
+        for (let i = 0; i < arrayValue.length; i++) {
+            let valueCell = document.createElement('td')
+            valueCell.innerHTML = textDecoder.decode(arrayValue[i])
+            row.append(valueCell)
+        }
+
+        table.append(row)
+    }
+    $pageMain.append(table)
+}
 
 
 
@@ -423,6 +457,7 @@ async function fileToMMKVMap(mmkvFile) {
 
     // Have the main buttons disappear for table data display
     emptyPageMain()
+    createDataTable()
 }
 
 
