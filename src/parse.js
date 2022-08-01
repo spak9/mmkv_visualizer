@@ -335,6 +335,7 @@ async function getMMKVParser() {
 // DOM Node References & updates
 //
 let $pageMain = document.querySelector('.page-main')
+let $pageMainButtons = document.querySelector('.main-buttons')
 let $mmkvInput = document.querySelector('#mmkv-input')
 
 function highlight() {
@@ -342,6 +343,10 @@ function highlight() {
 }
 function unhighlight() {
    $pageMain.classList.remove('highlight')
+}
+function emptyPageMain() {
+    $pageMainButtons.style.display = "none"
+    $pageMainButtons.previousElementSibling.style.display = "none"
 }
 
 
@@ -415,8 +420,12 @@ async function fileToMMKVMap(mmkvFile) {
 
     // Convert the `PyProxy` to its native JavaScript type and update our global ``
     mmkvMap = mapProxy.toJs()
-    
+
+    // Have the main buttons disappear for table data display
+    emptyPageMain()
 }
+
+
 
 
 $mmkvInput.addEventListener('change', onChange)
