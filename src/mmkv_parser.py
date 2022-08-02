@@ -58,7 +58,7 @@ class MMKVParser:
         # self.file_size = mmkv_file_path.stat().st_size
         # print(f'[+] {mmkv_file_path.name} is {self.file_size} bytes')
 
-        # Read in first 8 header bytes - [0:4] is total size
+        # Read in first 4 header bytes - [0:4] is total size
         self.header_bytes = self.mmkv_file.read(4)
         self.pos += 4
 

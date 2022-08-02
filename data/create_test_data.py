@@ -62,8 +62,10 @@ def create_overwritten_kv_data():
 
     kv = mmkv.MMKV('create_overwritten_kv_data')
 
-    kv.set('value_1', 'some_key')
-    kv.set('value_2', 'some_key')
+    for i in range(10):
+        for y in range(10):
+            kv.set(f'value_{y}', f'key_{i}')
+
 
 def create_encrypted_data():
     """

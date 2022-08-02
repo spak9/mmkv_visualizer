@@ -17,6 +17,7 @@ table {
   letter-spacing: 1px;
   font-size: 0.8rem;
   empty-cells: hide;
+  overflow: scroll;
 }
 
 td, th {
@@ -50,7 +51,7 @@ tr:nth-child(odd) td {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    /*align-items: center;*/
     border-style: dashed;
     border-width: 2px;
     border-radius: 16px;
