@@ -58,9 +58,13 @@ class MMKVParser:
         # self.file_size = mmkv_file_path.stat().st_size
         # print(f'[+] {mmkv_file_path.name} is {self.file_size} bytes')
 
-        # Read in first 8 header bytes - [0:4] is total size, [4:8] is garbage bytes basically (0xffffff07)
-        self.header_bytes = self.mmkv_file.read(8)
-        self.pos += 8
+        # Read in first 8 header bytes - [0:4] is total size
+        self.header_bytes = self.mmkv_file.read(4)
+        self.pos += 4
+
+        # [4:X] is garbage bytes basically (0xffffff07)
+        x, bytes_read = pb_reader.decode_varint(self.mmkv_file)
+        self.pos += bytes_read
 
         return None
 
