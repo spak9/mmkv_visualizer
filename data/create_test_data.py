@@ -62,8 +62,8 @@ def create_overwritten_kv_data():
 
     kv = mmkv.MMKV('create_overwritten_kv_data')
 
-    for i in range(10):
-        for y in range(10):
+    for i in range(30):
+        for y in range(12):
             kv.set(f'value_{y}', f'key_{i}')
 
 

@@ -7,7 +7,7 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    width: 60vw;
+    width: 70%;
     margin: auto;
     font-family: sans-serif;
 }
@@ -17,7 +17,8 @@ table {
   letter-spacing: 1px;
   font-size: 0.8rem;
   empty-cells: hide;
-  overflow: scroll;
+  align-self: flex-start;
+  width: 100%;
 }
 
 td, th {
@@ -30,7 +31,7 @@ th {
 }
 
 td {
-  text-align: center;
+  text-align: left;
 }
 
 tr:nth-child(even) td {
@@ -42,6 +43,8 @@ tr:nth-child(odd) td {
 }
 .page-header {
     flex: 1;
+    width: 60%;
+    align-self: center;
     display: flex;
     justify-content: space-between;
     flex-direction: row;
@@ -51,7 +54,7 @@ tr:nth-child(odd) td {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    /*align-items: center;*/
+    align-items: center;
     border-style: dashed;
     border-width: 2px;
     border-radius: 16px;
@@ -59,9 +62,14 @@ tr:nth-child(odd) td {
 .page-main.highlight {
     background-color: #E4E6C3;
 }
+.instructions {
+    flex: 0 0 auto;
+    margin: 16px;   
+}
 .main-buttons{
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-evenly;
 }
 .main-buttons > * {
     padding: 10px;
@@ -75,9 +83,16 @@ tr:nth-child(odd) td {
 .main-buttons > *:hover {
   background: #ddd;
 }
+.table-wrapper {
+    width: 100%;
+    overflow: scroll;
+    padding: 16px; 
+}
 .page-footer{
     flex: 1;
     display: flex;
+    width: 60%;
+    align-self: center;
     flex-direction: column;
 }
 .page-header > * {

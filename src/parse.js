@@ -346,14 +346,16 @@ function highlight() {
 function unhighlight() {
    $pageMain.classList.remove('highlight')
 }
-function emptyPageMain() {
-    $pageMainButtons.style.display = "none"
-    $pageMainButtons.previousElementSibling.style.display = "none"
-}
-function createDataTable(){
+// function emptyPageMain() {
+//     $pageMainButtons.style.display = "none"
+//     $pageMainButtons.previousElementSibling.style.display = "none"
+// }
+function createAndInsertDataTable(){
     let textDecoder = new TextDecoder()
+    let tableWrapper = document.createElement('div')
+    tableWrapper.classList.add('table-wrapper')
     let table = document.createElement('table')
-
+    tableWrapper.append(table)
     let keyHeaderCell = document.createElement('th')
     keyHeaderCell.innerHTML = "Keys"
     let valueHeaderCell = document.createElement('th')
@@ -382,7 +384,7 @@ function createDataTable(){
 
         table.append(row)
     }
-    $pageMain.append(table)
+    $pageMain.append(tableWrapper)
 }
 
 
@@ -458,8 +460,7 @@ async function fileToMMKVMap(mmkvFile) {
     mmkvMap = mapProxy.toJs()
 
     // Have the main buttons disappear for table data display
-    emptyPageMain()
-    createDataTable()
+    createAndInsertDataTable()
 }
 
 
