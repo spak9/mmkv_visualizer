@@ -2,7 +2,7 @@
 
 
 //
-// Constants and helper functions
+// Mutable Application State and Helper Functions
 //
 let mmkvParser = null;
 let mmkvMap = null;
@@ -329,11 +329,6 @@ async function getMMKVParser() {
 
 
 //
-// Application State
-//
-
-
-//
 // DOM Node References & updates
 //
 let $pageMain = document.querySelector('.page-main')
@@ -343,15 +338,21 @@ let $mmkvInput = document.querySelector('#mmkv-input')
 function highlight() {
    $pageMain.classList.add('highlight')
 }
+
 function unhighlight() {
    $pageMain.classList.remove('highlight')
 }
-// function emptyPageMain() {
-//     $pageMainButtons.style.display = "none"
-//     $pageMainButtons.previousElementSibling.style.display = "none"
-// }
+
+/**
+ * Creates a new <table> instance, updates it with data from `mmkvMap`, then inserts it as a child 
+ * of `.page-main`. 
+ */
 function createAndInsertDataTable(){
+
+    // TextDecoder for UTF-8 values
     let textDecoder = new TextDecoder()
+
+    // Create our .table-wrapper div and add our table and headers
     let tableWrapper = document.createElement('div')
     tableWrapper.classList.add('table-wrapper')
     let table = document.createElement('table')
