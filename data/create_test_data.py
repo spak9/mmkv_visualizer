@@ -81,6 +81,18 @@ def create_encrypted_data():
     kv = mmkv.MMKV('create_encrypted_data', mmkv.MMKVMode.SingleProcess, 'my_key')
     kv.set('some_string', 'string_key')
 
+def create_test_1():
+
+    kv = mmkv.MMKV('create_blah')
+    kv.set('some_string', 'string_key')
+    print(f'set string_key to: {kv.getString("string_key")}')
+
+    kv.remove('string_key')
+    print(f'removed string_key: {kv.getString("string_key")}')
+
+    
+
+
 
 if __name__ == "__main__":
     mmkv.MMKV.initializeMMKV('.')
@@ -90,3 +102,5 @@ if __name__ == "__main__":
     create_overwritten_kv_data()
 
     create_encrypted_data()
+
+    create_test_1()

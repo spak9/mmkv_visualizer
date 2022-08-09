@@ -199,8 +199,9 @@ async function getMMKVParser() {
 
           # Loop and read key-value pairs into 'decoded_map'
           db_size = self.get_db_size()
-          if not db_size:
-              raise ValueError('Cannot read MMKV datastore size - please make sure you successfully initialize().')
+          if db_size == 0:
+              print('[+] MMKV datastore size is 0 - making db_size 256KB.')
+              db_size = 256000
 
           while self.pos < db_size:
               # parse key
@@ -210,7 +211,14 @@ async function getMMKVParser() {
                   break
 
               self.pos += bytes_read
-              key = self.mmkv_file.read(key_length).decode(encoding='utf-8')
+              try:
+                key_bytes = self.mmkv_file.read(key_length)
+                key = key_bytes.decode(encoding='utf-8')
+
+              except UnicodeDecodeError:
+                print(f'[+] Error trying to UTF-8 decode {key_bytes} - returning decoded_map.')
+                return self.decoded_map
+
 
               if key == '' and key_length == 0:
                   break
