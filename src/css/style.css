@@ -62,7 +62,9 @@ tr:nth-child(odd) td {
     border-style: dashed;
     border-width: 2px;
     border-radius: 16px;
-    height: 80%;
+    height: 80%;            /* Used to make sure table doesn't make div taller */
+    margin: 16px;
+
 
     /* Flex Items */
     flex: 0 0 80%;
@@ -110,6 +112,10 @@ tr:nth-child(odd) td {
     width: 60%;
     align-self: center;
     flex-direction: column;
+}
+.text {
+    margin: 8px;
+    font-size: 1.25em;
 }
 .page-header > * {
     padding: 16px;
