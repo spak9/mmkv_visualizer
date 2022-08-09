@@ -6,6 +6,17 @@
 //
 let mmkvParser = null;
 let mmkvMap = null;
+const interpretableTypes = [
+    'raw-type', 
+    'string-type', 
+    'int32-type', 
+    'signed-int32-type',
+    'int64-type', 
+    'signed-int64-type', 
+    'bytes-type',
+    'float-type',
+    'bool-type'
+    ]
 
 // Set up our hex conversation function - creates an array of incrementing hex values
 const byteToHex = [];
@@ -229,6 +240,12 @@ async function getMMKVParser() {
                   print('[+] Ran out of bytes while decoding data into map - stopped parsing')
                   break
 
+              # key-value pair was removed - value_length is 0
+              elif (value_length, bytes_read) == (0, 1):
+                print('[+] Value read was a null byte, therefore key-value pair was removed - no update and continuing')
+                self.pos += bytes_read
+                continue
+
               self.pos += bytes_read
               value = self.mmkv_file.read(value_length)  # interpretable
 
@@ -327,6 +344,20 @@ async function getMMKVParser() {
             """
             return struct.unpack('<d', value)[0]
 
+        def reset(self) -> None:
+            """
+            Resets the instance variabls all back to original __init__ state
+
+            :return: None
+            """
+            self.mmkv_file: Optional[BufferedIOBase] = None
+            self.crc_file: Optional[BufferedIOBase] = None
+            self.file_size: Optional[int] = None
+            self.header_bytes: Optional[bytes] = None           # Should be 8 bytes after initialization
+            self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
+            self.pos = 0
+            return None
+
       mmkv_parser = MMKVParser()
       mmkv_parser
     `);
@@ -356,8 +387,14 @@ function unhighlight() {
  * of `.page-main`. 
  */
 function createAndInsertDataTable(){
+    // Removes the `table-wrapper` div from DOM if it exists 
+    let oldTableWrapper = document.querySelector('.table-wrapper')
+    if (oldTableWrapper != null) {
+        console.log('removing old table wrapper div')
+        oldTableWrapper.remove()
+    }
 
-    // TextDecoder for UTF-8 values
+    // TextDecoder for UTF-8 values, keys have already been UTF-8 decoded
     let textDecoder = new TextDecoder()
 
     // Create our .table-wrapper div and add our table and headers
@@ -384,7 +421,7 @@ function createAndInsertDataTable(){
 
         row.append(key)
 
-        // Iterate through Array of Uint8Array values
+        // Iterate through Array of Uint8Array values and create data cells - begin with no interpretation
         for (let i = 0; i < arrayValue.length; i++) {
             let valueCell = document.createElement('td')
             valueCell.innerHTML = textDecoder.decode(arrayValue[i])
@@ -459,7 +496,8 @@ async function fileToMMKVMap(mmkvFile) {
 
     let hexString = toHexString(data)
 
-    // Initialize our mmkvParser with hex string
+    // Reset and initialize our mmkvParser with hex string
+    mmkvParser.reset()
     mmkvParser.initialize(hexString)
 
     // Decode the data into a PyProxty (`dict[list[bytes]]`)

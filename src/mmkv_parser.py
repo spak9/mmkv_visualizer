@@ -117,9 +117,16 @@ class MMKVParser:
 
             # parse value
             value_length, bytes_read = pb_reader.decode_varint(self.mmkv_file, mask=32)
+
             if (value_length, bytes_read) == (-1, -1):
                 print('[+] Ran out of bytes while decoding data into map - stopped parsing')
                 break
+
+            # key-value pair was removed - value_length is 0
+            elif (value_length, bytes_read) == (0, 1):
+                print('[+] Value read was a null byte, therefore key-value pair was removed - no update and continuing')
+                self.pos += bytes_read
+                continue
 
             self.pos += bytes_read
             value = self.mmkv_file.read(value_length)  # interpretable
@@ -220,4 +227,18 @@ class MMKVParser:
         :return: Returns the float result
         """
         return struct.unpack('<d', value)[0]
+
+    def reset(self) -> None:
+        """
+        Resets the instance variabls all back to original __init__ state
+
+        :return: None
+        """
+        self.mmkv_file: Optional[BufferedIOBase] = None
+        self.crc_file: Optional[BufferedIOBase] = None
+        self.file_size: Optional[int] = None
+        self.header_bytes: Optional[bytes] = None           # Should be 8 bytes after initialization
+        self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
+        self.pos = 0
+        return None
 
