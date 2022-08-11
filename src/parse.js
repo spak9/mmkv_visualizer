@@ -1,13 +1,22 @@
+//
 // Written by Steven Pak
+//
 
 
 //
 // Mutable Application State and Helper Functions
 //
+
+// Global "singleton" MMKVParser, which facilitates the actual parsing of MMKV data
 let mmkvParser = null;
+
+// Global JavaScript Map[String: Array[Uint8Array]] once parsing is finished
 let mmkvMap = null;
+
+// Constant interpretable type (protobuf-based) classes in which <td> data cells 
+// can take. Only one of these can be a class of a <td> at a time.
 const interpretableTypes = [
-    'raw-type', 
+    'hexstring-type', 
     'string-type', 
     'int32-type', 
     'signed-int32-type',
@@ -38,7 +47,7 @@ function toHexString(arrayBuffer)
     for (let i = 0; i < buff.length; ++i)
         hexOctets.push(byteToHex[buff[i]]);
 
-    return hexOctets.join("");
+    return hexOctets.join("").toUpperCase();
 }
 
 /**
@@ -385,6 +394,7 @@ function unhighlight() {
 /**
  * Creates a new <table> instance, updates it with data from `mmkvMap`, then inserts it as a child 
  * of `.page-main`. 
+ * The default type/class of every <td> will be "hexstring-type".
  */
 function createAndInsertDataTable(){
     // Removes the `table-wrapper` div from DOM if it exists 
@@ -421,18 +431,18 @@ function createAndInsertDataTable(){
 
         row.append(key)
 
-        // Iterate through Array of Uint8Array values and create data cells - begin with no interpretation
+        // Iterate through Array of Uint8Array values and create data cells - begin with hexstring-type
         for (let i = 0; i < arrayValue.length; i++) {
             let valueCell = document.createElement('td')
-            valueCell.innerHTML = textDecoder.decode(arrayValue[i])
+            valueCell.className = interpretableTypes[0]
+            valueCell.innerHTML = toHexString(arrayValue[i])
             row.append(valueCell)
         }
-
         table.append(row)
     }
     $pageMain.append(tableWrapper)
+    table.addEventListener('click', onDataCellClick)
 }
-
 
 
 //
@@ -485,6 +495,25 @@ async function onChange(event) {
 }
 
 /**
+ * Callback for when user clicks on a <td> data cell to rotate the interpretable type/class.
+ * This utilizes event delegation, therefore this is added to the <table>, not the individual <td>s.
+ * @param {event} Event The Event object that carries on the "click" event.
+ */
+function onDataCellClick(event) {
+    let td = event.target
+
+    if (td.tagName != "TD") {
+        return;
+    }
+
+    // Rotate the element class by finding index of current class - NOT efficient and should update
+    let currClassIndex = interpretableTypes.indexOf(td.className)
+    let nextClassIndex = (currClassIndex + 1) % interpretableTypes.length
+    td.className = interpretableTypes[nextClassIndex]
+
+}
+
+/**
  * Turns `mmkvFile` into a native JavaScript "Map[String: Array[Uint8Array]]"
  * @param {mmkvFile} mmkvFile The File to convert to a Map
  * 
@@ -510,12 +539,10 @@ async function fileToMMKVMap(mmkvFile) {
     createAndInsertDataTable()
 }
 
-
-
-
 $mmkvInput.addEventListener('change', onChange)
 $pageMain.addEventListener('drop', onDrop)
 $pageMain.addEventListener('dragover', onDragover)
+
 
 ;['dragenter', 'dragover'].forEach(function(eventName) {
    $pageMain.addEventListener(eventName, highlight)
