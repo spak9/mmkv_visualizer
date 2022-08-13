@@ -51,6 +51,14 @@ function toHexString(arrayBuffer)
 }
 
 /**
+ * Converts `hexString` into a 
+function hexToBytes(hexString) {
+    for (var bytes = [], c = 0; c < hexString.length; c += 2)
+        bytes.push(parseInt(hexString.substr(c, 2), 16));
+    return bytes;
+}
+
+/**
  * Asynchronously creates an `MMKVParser` instance in python and returns it as 
  * a `PyProxy` instance in JavaScript, now able to have functions called upon it.
  */
@@ -431,11 +439,17 @@ function createAndInsertDataTable(){
 
         row.append(key)
 
-        // Iterate through Array of Uint8Array values and create data cells - begin with hexstring-type
+        // Iterate through Array of Uint8Array values and create data cells - begin with hexstring-type.
+        // Also add a "data-*" attribute that will be the hexstring-type data, always used for ingest into 
+        // the MMKVParser API.
         for (let i = 0; i < arrayValue.length; i++) {
+
+            // Create data cell with hexstring and add a data attribute 
             let valueCell = document.createElement('td')
             valueCell.className = interpretableTypes[0]
-            valueCell.innerHTML = toHexString(arrayValue[i])
+            let hexData = toHexString(arrayValue[i])
+            valueCell.innerHTML = hexData
+            valueCell.dataset.hexdata = hexData
             row.append(valueCell)
         }
         table.append(row)
@@ -511,6 +525,23 @@ function onDataCellClick(event) {
     let nextClassIndex = (currClassIndex + 1) % interpretableTypes.length
     td.className = interpretableTypes[nextClassIndex]
 
+    // Feed the data cell's dataset "hexdata" into the MMKVParser API based on new clicked-on class
+    let newDataEncoding = null
+
+    // // hexstring-type --> String
+    // if (td.className === interpretableTypes[0]) {
+    //     newDataEncoding = td.dataset.hexdata
+    // }
+
+    // // string-type --> String
+    // else if (td.className === interpretableTypes[1]) {
+    //     newDataEncoding = mmkvParser.decode_as_string(td.dataset.hexdata)
+    // }
+
+    // // int-32-type --> Number
+    // else if (td.className === interpretableTypes[1]) {
+    //     newDataEncoding = mmkvParser.decode_as_int(td.dataset.hexdata)
+    // }
 }
 
 /**
@@ -535,7 +566,7 @@ async function fileToMMKVMap(mmkvFile) {
     // Convert the `PyProxy` to its native JavaScript type and update our global ``
     mmkvMap = mapProxy.toJs()
 
-    // Have the main buttons disappear for table data display
+    // .main-buttons move up, create <table> full of data, and insert it into the DOM
     createAndInsertDataTable()
 }
 
