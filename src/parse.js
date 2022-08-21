@@ -59,7 +59,7 @@ function hexToBytes(hexString) {
 }
 
 /**
- * Asynchronously creates an `MMKVParser` instance in python and returns it as 
+ * "Asynchronously" creates an `MMKVParser` instance in python and returns it as 
  * a `PyProxy` instance in JavaScript, now able to have functions called upon it.
  */
 async function getMMKVParser() {
@@ -272,13 +272,14 @@ async function getMMKVParser() {
           return self.decoded_map
 
 
-        def decode_as_bool(self, value: bytes) -> Optional[bool]:
+        def decode_as_bool(self, value: str) -> Optional[bool]:
           """
           Attempts to decode 'value' as a boolean.
 
-          :param value: protobuf-encoded bytes value
+          :param value: protobuf-encoded hex string value
           :return: Returns the boolean result if possible, or None if not
           """
+          value = bytes.fromhex(value)
           if value == bytes.fromhex('01'):
               return True
           elif value == bytes.fromhex('00'):
@@ -286,29 +287,31 @@ async function getMMKVParser() {
           else:
               return None
 
-        def decode_as_int32(self, value: bytes) -> int:
+        def decode_as_int32(self, value: str) -> int:
             """
             Decodes 'value' as a signed 32-bit int.
 
-            :param value: protobuf-encoded bytes value
+            :param value: protobuf-encoded hex string value
             :return: Returns the signed 32-bit int result
             """
+            value = bytes.fromhex(value)
             return decode_signed_varint(BytesIO(value), mask=32)[0]
 
         def decode_as_int64(self, value: bytes) -> int:
             """
             Decodes 'value' as a signed 64-bit int.
 
-            :param value: protobuf-encoded bytes value
+            :param value: protobuf-encoded hex string value
             :return: Returns the signed 64-bit int result
             """
+            value = bytes.fromhex(value)
             return decode_signed_varint(BytesIO(value), mask=64)[0]
 
-        def decode_as_uint32(self, value: bytes) -> int:
+        def decode_as_uint32(self, value: str) -> int:
             """
             Decodes 'value' as an unsigned 32-bit int.
 
-            :param value: protobuf-encoded bytes value
+            :param value: protobuf-encoded hex string value
             :return: Returns the unsigned 32-bit int result
             """
             return decode_varint(BytesIO(value), mask=32)[0]
@@ -322,14 +325,15 @@ async function getMMKVParser() {
             """
             return decode_varint(BytesIO(value), mask=64)[0]
 
-        def decode_as_string(self, value: bytes) -> Optional[str]:
+        def decode_as_string(self, value: str) -> Optional[str]:
             """
             Attempts to decodes 'value' as a UTF-8 string.
             Note: This assumes that 'value' has the "erroneous" varint length wrapper
 
-            :param value: protobuf-encoded bytes value
+            :param value: protobuf-encoded hex string value
             :return: Returns the UTF-8 decoded string, or None if not possible
             """
+            value = bytes.fromhex(value)
             # Strip off the varint length delimiter bytes
             wrapper_bytes, wrapper_bytes_len = decode_varint(BytesIO(value), mask=32)
             value = value[wrapper_bytes_len:]
@@ -339,26 +343,28 @@ async function getMMKVParser() {
                 print(f'Could not UTF-8 decode [{value}]')
                 return None
 
-        def decode_as_bytes(self, value: bytes) -> bytes:
+        def decode_as_bytes(self, value: str) -> bytes:
             """
             Decodes 'value' as bytes.
             Note: This assumes that 'value' has the "erroneous" varint length wrapper
 
-            :param value: protobuf-encoded bytes value
+            :param value: protobuf-encoded hex string value
             :return: Returns the bytes
             """
+            value = bytes.fromhex(value)
             # Strip off the varint length delimiter bytes
             wrapper_bytes, wrapper_bytes_len = decode_varint(BytesIO(value), mask=32)
             value = value[wrapper_bytes_len:]
             return value
 
-        def decode_as_float(self, value: bytes) -> float:
+        def decode_as_float(self, value: str) -> float:
             """
             Decodes 'value' as a double (8-bytes), which is a float type in Python.
 
-            :param value: protobuf-encoded bytes value
+            :param value: protobuf-encoded hex string value
             :return: Returns the float result
             """
+            value = bytes.fromhex(value)
             return struct.unpack('<d', value)[0]
 
         def reset(self) -> None:
@@ -560,10 +566,10 @@ async function fileToMMKVMap(mmkvFile) {
     mmkvParser.reset()
     mmkvParser.initialize(hexString)
 
-    // Decode the data into a PyProxty (`dict[list[bytes]]`)
+    // Decode the data into a PyProxy
     let mapProxy = mmkvParser.decode_into_map()
 
-    // Convert the `PyProxy` to its native JavaScript type and update our global ``
+    // Convert the `PyProxy` to its native JavaScript type (Map[String: Array[Uint8Array]]) and update our global
     mmkvMap = mapProxy.toJs()
 
     // .main-buttons move up, create <table> full of data, and insert it into the DOM

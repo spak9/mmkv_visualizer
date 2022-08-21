@@ -10,7 +10,12 @@ import struct
 
 class MMKVParser:
     """
+    MMKVParser is a class that will read in an MMKV file and optionally a CRC32 file and will
+    parse the database file into an in-memory dictionary. 
+    The dictionary will be a simple key-value store, with UTF-8 keys and list values.
 
+    The true power of this class comes from its type decoding API, enabling the 
+    user to decode arbitrary bytes into a protobuf type.
     """
 
     def __init__(self):
