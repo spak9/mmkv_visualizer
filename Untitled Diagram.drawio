@@ -1,0 +1,58 @@
+<mxfile host="app.diagrams.net" modified="2022-08-21T20:27:12.330Z" agent="5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36" etag="tPpZ-_WhCRpl4Ru_ctYO" version="20.2.5" type="github">
+  <diagram id="4v4Hb3ES8CYi6VBC8URq" name="Page-1">
+    <mxGraphModel dx="1028" dy="661" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-1" value="&lt;font style=&quot;font-size: 20px;&quot;&gt;MMKV Visualizer Architecture&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="296" y="40" width="259" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-2" value="MMKV Visualizer User Flow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="278" y="130" width="294" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-4" value="" style="endArrow=none;dashed=1;html=1;rounded=0;fontSize=20;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="424" y="851" as="sourcePoint" />
+            <mxPoint x="424" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-5" value="JavaScript" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="143" y="184" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-6" value="Python" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="642" y="184" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-8" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;br&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=20;" vertex="1" parent="1">
+          <mxGeometry x="365" y="222" width="18" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=14;" edge="1" parent="1" source="5RzlqCDgiQVrFZ5_vfMo-9" target="5RzlqCDgiQVrFZ5_vfMo-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-9" value="&lt;span style=&quot;&quot;&gt;1. User opens up MMKV Visualizer web application.&lt;/span&gt;&lt;br style=&quot;&quot;&gt;&lt;span style=&quot;&quot;&gt;Synchronously loads in Pyodide runtime and sets up our global&amp;nbsp;&lt;br&gt;[mmkvParser], a [PyProxy] instance.&lt;br&gt;&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="8" y="224" width="406" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=14;" edge="1" parent="1" source="5RzlqCDgiQVrFZ5_vfMo-11" target="5RzlqCDgiQVrFZ5_vfMo-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-11" value="2a. User will &quot;drag-and-drop&quot;/upload a file that will be then be fed into our [mmkvParser] for Python decoding into map." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="11" y="315" width="402" height="91" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=14;" edge="1" parent="1" source="5RzlqCDgiQVrFZ5_vfMo-12" target="5RzlqCDgiQVrFZ5_vfMo-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-12" value="2b. Decode the MMKV file into a [PyProxy] instance" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="441" y="386" width="414" height="61" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.515;entryY=0.001;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=14;" edge="1" parent="1" source="5RzlqCDgiQVrFZ5_vfMo-13" target="5RzlqCDgiQVrFZ5_vfMo-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-13" value="2c. Convert the [PyProxy] instance into its native JavaScript Map type (Map[String: Array[Uint8Array]] )" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="11" y="479" width="401" height="88" as="geometry" />
+        </mxCell>
+        <mxCell id="5RzlqCDgiQVrFZ5_vfMo-14" value="2d. Create a &amp;lt;table&amp;gt;, populated with the [mmkvMap] data. Add onclick event listeners via event delegation to ever &amp;lt;td&amp;gt; that will rotate the &amp;lt;td&amp;gt; interpretable type." style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="8" y="611" width="396" height="65" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
