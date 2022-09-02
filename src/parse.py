@@ -35,6 +35,9 @@ if __name__ == "__main__":
     for value in values:
         print(str(value[0]))
 
+    value = mmkv_parser.decode_as_string(bytes.fromhex('FFFFFFFF07'))
+    print(value)
+
 
 
 

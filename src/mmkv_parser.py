@@ -204,11 +204,14 @@ class MMKVParser:
         """
         # Strip off the varint length delimiter bytes
         wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), mask=32)
-        value = value[wrapper_bytes_len:]
+
         try:
+            if wrapper_bytes_len >= len(value):
+                raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
+            value = value[wrapper_bytes_len:]
             return value.decode('utf-8')
         except:
-            print(f'Could not UTF-8 decode [{value}]')
+            print(f'[+] Could not UTF-8 decode [{value}]')
             return None
 
     def decode_as_bytes(self, value: bytes) -> bytes:

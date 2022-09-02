@@ -19,9 +19,9 @@ const interpretableTypes = [
     'hexstring-type', 
     'string-type', 
     'int32-type', 
-    'signed-int32-type',
+    'uint32-type',
     'int64-type', 
-    'signed-int64-type', 
+    'uint64-type', 
     'bytes-type',
     'float-type',
     'bool-type'
@@ -297,7 +297,7 @@ async function getMMKVParser() {
             value = bytes.fromhex(value)
             return decode_signed_varint(BytesIO(value), mask=32)[0]
 
-        def decode_as_int64(self, value: bytes) -> int:
+        def decode_as_int64(self, value: str) -> int:
             """
             Decodes 'value' as a signed 64-bit int.
 
@@ -314,15 +314,17 @@ async function getMMKVParser() {
             :param value: protobuf-encoded hex string value
             :return: Returns the unsigned 32-bit int result
             """
+            value = bytes.fromhex(value)
             return decode_varint(BytesIO(value), mask=32)[0]
 
-        def decode_as_uint64(self, value: bytes) -> int:
+        def decode_as_uint64(self, value: str) -> int:
             """
             Decodes 'value' as an unsigned 64-bit int.
 
-            :param value: protobuf-encoded bytes value
+            :param value: protobuf-encoded hex string value
             :return: Returns the unsigned 64-bit int result
             """
+            value = bytes.fromhex(value)
             return decode_varint(BytesIO(value), mask=64)[0]
 
         def decode_as_string(self, value: str) -> Optional[str]:
@@ -336,11 +338,13 @@ async function getMMKVParser() {
             value = bytes.fromhex(value)
             # Strip off the varint length delimiter bytes
             wrapper_bytes, wrapper_bytes_len = decode_varint(BytesIO(value), mask=32)
-            value = value[wrapper_bytes_len:]
             try:
+                if wrapper_bytes_len >= len(value):
+                    raise ValueError('[+] Wrapper bytes length when decoding string is longer than "value".')
+                value = value[wrapper_bytes_len:]
                 return value.decode('utf-8')
             except:
-                print(f'Could not UTF-8 decode [{value}]')
+                print(f'[+] Could not UTF-8 decode [{value}]')
                 return None
 
         def decode_as_bytes(self, value: str) -> bytes:
@@ -533,21 +537,74 @@ function onDataCellClick(event) {
 
     // Feed the data cell's dataset "hexdata" into the MMKVParser API based on new clicked-on class
     let newDataEncoding = null
+    console.log(td.className)
+    // const interpretableTypes = [
+    // 'hexstring-type', 
+    // 'string-type', 
+    // 'int32-type', 
+    // 'uint32-type',
+    // 'int64-type', 
+    // 'uint64-type', 
+    // 'bytes-type',
+    // 'float-type',
+    // 'bool-type'
+    // ]
 
-    // // hexstring-type --> String
-    // if (td.className === interpretableTypes[0]) {
-    //     newDataEncoding = td.dataset.hexdata
-    // }
+    // hexstring-type --> String
+    if (td.className === interpretableTypes[0]) {
+        newDataEncoding = td.dataset.hexdata
+    }
 
-    // // string-type --> String
-    // else if (td.className === interpretableTypes[1]) {
-    //     newDataEncoding = mmkvParser.decode_as_string(td.dataset.hexdata)
-    // }
+    // string-type --> String
+    else if (td.className === interpretableTypes[1]) {
+        newDataEncoding = mmkvParser.decode_as_string(td.dataset.hexdata)
+    }
 
-    // // int-32-type --> Number
-    // else if (td.className === interpretableTypes[1]) {
-    //     newDataEncoding = mmkvParser.decode_as_int(td.dataset.hexdata)
-    // }
+    // int-32-type --> Number
+    else if (td.className === interpretableTypes[2]) {
+        console.log(td.dataset.hexdata)
+        newDataEncoding = mmkvParser.decode_as_int32(td.dataset.hexdata)
+    }
+
+    // uint-32-type --> Number
+    else if (td.className === interpretableTypes[3]) {
+        console.log(td.dataset.hexdata)
+        newDataEncoding = mmkvParser.decode_as_uint32(td.dataset.hexdata)
+    }
+
+    // int-64-type --> Number
+    else if (td.className === interpretableTypes[4]) {
+        console.log(td.dataset.hexdata)
+        newDataEncoding = mmkvParser.decode_as_int64(td.dataset.hexdata)
+    }
+
+    // uint64-type --> Number
+    else if (td.className === interpretableTypes[5]) {
+        console.log(td.dataset.hexdata)
+        newDataEncoding = mmkvParser.decode_as_uint64(td.dataset.hexdata)
+    }
+
+    // bytes-type --> TypedArray
+    else if (td.className === interpretableTypes[6]) {
+        console.log(td.dataset.hexdata)
+        newDataEncoding = mmkvParser.decode_as_bytes(td.dataset.hexdata)
+    }
+
+    // float-type --> Number
+    else if (td.className === interpretableTypes[7]) {
+        console.log(td.dataset.hexdata)
+        newDataEncoding = mmkvParser.decode_as_float(td.dataset.hexdata)
+    }
+
+    // bool-type --> Bool
+    else if (td.className === interpretableTypes[8]) {
+        console.log(td.dataset.hexdata)
+        newDataEncoding = mmkvParser.decode_as_bool(td.dataset.hexdata)
+    }
+
+
+    // Lastly, update our <td> instance inner HTML
+    td.innerHTML = newDataEncoding
 }
 
 /**
