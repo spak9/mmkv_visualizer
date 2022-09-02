@@ -95,18 +95,15 @@ def create_test_1():
 
 
 if __name__ == "__main__":
-    try:
 
-        mmkv.MMKV.initializeMMKV('.')
 
-        create_basic_data()
+    mmkv.MMKV.initializeMMKV('.')
 
-        create_overwritten_kv_data()
+    create_basic_data()
 
-        create_encrypted_data()
+    create_overwritten_kv_data()
 
-        create_test_1()
+    create_encrypted_data()
 
-    except ModuleNotFoundError as e:
-        print(f'[+] Please make sure to have the "mmkv" python package installed from '
-                'Tencent MMKV Github Repo. Not available on pypi.')
+    create_test_1()
+
