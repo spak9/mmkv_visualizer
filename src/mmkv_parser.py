@@ -11,18 +11,22 @@ import ctypes
 """
 Global helper functions used for decoding 8-bit varints used within Google protocol buffers.
 """
-def decode_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple[int, int]:
+
+def decode_unsigned_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tuple[int, int]:
     """
-    Reads a base-128 varint from `buffered_base` and returns the positive result of the
+    Reads a base-128 varint from `buffered_base` and returns the unsigned result of the
     varint.
-    This assumes a `mask` of 64-bits for decoding typical "int32" and "int64" values,
-    but should pass in a mask of 32-bits when decoding varints that denote lengths.
+    This assumes a `mask` of 32-bits for decoding typical "int32" types. If you need to
+    decode an "int64" type, use a 64-bit mask
+
+    :param buffered_base: A file-like object that will incremently read byte-by-byte
+    :param mask: an int that denotes either a 32 or 64-bit type.
+    :return: A Tuple[int, int] of (varint_result, bytes_read) or (-1, -1) or 
     """
     shift = 0
     result = 0
-    bytes_read = 0
     byte = buffered_base.read(1)
-    bytes_read += 1
+    bytes_read = 1
 
     # Check if `buffered_base` has valid bytes
     if not byte:
@@ -38,10 +42,10 @@ def decode_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple[int, i
         result |= (i & 0x7f) << shift
         shift += 7
         if not (i & 0x80):
-            # AND the value to keep it within `mask` range
-            result &= ((1 << mask) - 1)
-            break
-
+            if mask == 64:
+                result = ctypes.c_uint64(result).value
+            else:
+                result = ctypes.c_uint32(result).value
         byte = buffered_base.read(1)
         bytes_read += 1
         if not byte:
@@ -52,11 +56,12 @@ def decode_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple[int, i
     return result, bytes_read
 
 
-def decode_signed_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple[int, int]:
+def decode_signed_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tuple[int, int]:
     """
-    Reads a base-128 varint from `buffered_base` and returns the negative result of the
+    Reads a base-128 varint from `buffered_base` and returns the signed result of the
     varint.
-    This assumes a `mask` of 64-bits for decoding typical "int32" and "int64" with negative values.
+    This assumes a `mask` of 32-bits for decoding typical "int32" with negative values.
+    If you need to decode an "int64" value, use a 64-bit mask.
     """
     shift = 0
     result = 0
@@ -78,7 +83,6 @@ def decode_signed_varint(buffered_base: BufferedIOBase, mask: int = 64) -> Tuple
         result |= (i & 0x7f) << shift
         shift += 7
         if not (i & 0x80):
-            result &= (1 << mask) - 1
             if mask == 64:
                 result = ctypes.c_int64(result).value
             else:
