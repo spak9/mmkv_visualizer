@@ -7,10 +7,12 @@ import sys
 import struct
 import ctypes
 
-
 """
 Global helper functions used for decoding 8-bit varints used within Google protocol buffers.
+These helper functions will be the underlying infrastructure for the the `MMKVParser` public API
+for decoding various bytes.  
 """
+
 
 def decode_unsigned_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tuple[int, int]:
     """
@@ -21,7 +23,7 @@ def decode_unsigned_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tup
 
     :param buffered_base: A file-like object that will incremently read byte-by-byte
     :param mask: an int that denotes either a 32 or 64-bit type.
-    :return: A Tuple[int, int] of (varint_result, bytes_read) or (-1, -1) or 
+    :return: A Tuple[int, int] of (varint_result, bytes_read) or (-1, -1) for invalid reading
     """
     shift = 0
     result = 0
@@ -43,6 +45,7 @@ def decode_unsigned_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tup
         shift += 7
         if not (i & 0x80):
             if mask == 64:
+                # Result is casted via a "uint"
                 result = ctypes.c_uint64(result).value
             else:
                 result = ctypes.c_uint32(result).value
@@ -64,6 +67,10 @@ def decode_signed_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tuple
     varint.
     This assumes a `mask` of 32-bits for decoding typical "int32" with negative values.
     If you need to decode an "int64" value, use a 64-bit mask.
+
+    :param buffered_base: A file-like object that will incremently read byte-by-byte
+    :param mask: an int that denotes either a 32 or 64-bit type.
+    :return: A Tuple[int, int] of (varint_result, bytes_read) or (-1, -1) for invalid reading
     """
     shift = 0
     result = 0
@@ -86,6 +93,7 @@ def decode_signed_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tuple
         shift += 7
         if not (i & 0x80):
             if mask == 64:
+                # Result is casted via a "uint"
                 result = ctypes.c_int64(result).value
             else:
                 result = ctypes.c_int32(result).value
@@ -115,7 +123,7 @@ class MMKVParser:
         self.mmkv_file: Optional[BufferedIOBase] = None
         self.crc_file: Optional[BufferedIOBase] = None
         self.file_size: Optional[int] = None
-        self.header_bytes: Optional[bytes] = None           # Should be 8 bytes after initialization
+        self.header_bytes: Optional[bytes] = None  # Should be 8 bytes after initialization
         self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
         self.pos = 0
 
@@ -161,7 +169,7 @@ class MMKVParser:
         self.pos += 4
 
         # [4:X] is garbage bytes basically (0xffffff07)
-        x, bytes_read = pb_reader.decode_varint(self.mmkv_file)
+        x, bytes_read = decode_unsigned_varint(self.mmkv_file)
         self.pos += bytes_read
 
         return None
@@ -191,11 +199,10 @@ class MMKVParser:
             print('[+] MMKV datastore size is 0 - making db_size 256KB.')
             db_size = 256000
 
-
         while self.pos < db_size:
 
             # parse key
-            key_length, bytes_read = pb_reader.decode_varint(self.mmkv_file, mask=32)
+            key_length, bytes_read = decode_unsigned_varint(self.mmkv_file, mask=32)
             if (key_length, bytes_read) == (-1, -1):
                 print('[+] Ran out of bytes while decoding data into map - stopped parsing')
                 break
@@ -214,7 +221,7 @@ class MMKVParser:
                 break
 
             # parse value
-            value_length, bytes_read = pb_reader.decode_varint(self.mmkv_file, mask=32)
+            value_length, bytes_read = decode_unsigned_varint(self.mmkv_file, mask=32)
 
             if (value_length, bytes_read) == (-1, -1):
                 print('[+] Ran out of bytes while decoding data into map - stopped parsing')
@@ -258,7 +265,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the signed 32-bit int result
         """
-        return pb_reader.decode_signed_varint(BytesIO(value), mask=32)[0]
+        return decode_signed_varint(BytesIO(value), mask=32)[0]
 
     def decode_as_int64(self, value: bytes) -> int:
         """
@@ -267,7 +274,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the signed 64-bit int result
         """
-        return pb_reader.decode_signed_varint(BytesIO(value), mask=64)[0]
+        return decode_signed_varint(BytesIO(value), mask=64)[0]
 
     def decode_as_uint32(self, value: bytes) -> int:
         """
@@ -276,7 +283,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the unsigned 32-bit int result
         """
-        return pb_reader.decode_varint(BytesIO(value), mask=32)[0]
+        return decode_unsigned_varint(BytesIO(value), mask=32)[0]
 
     def decode_as_uint64(self, value: bytes) -> int:
         """
@@ -285,7 +292,7 @@ class MMKVParser:
         :param value: protobuf-encoded bytes value
         :return: Returns the unsigned 64-bit int result
         """
-        return pb_reader.decode_varint(BytesIO(value), mask=64)[0]
+        return decode_unsigned_varint(BytesIO(value), mask=64)[0]
 
     def decode_as_string(self, value: bytes) -> Optional[str]:
         """
@@ -296,7 +303,7 @@ class MMKVParser:
         :return: Returns the UTF-8 decoded string, or None if not possible
         """
         # Strip off the varint length delimiter bytes
-        wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), mask=32)
+        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
 
         try:
             if wrapper_bytes_len >= len(value):
@@ -316,7 +323,7 @@ class MMKVParser:
         :return: Returns the bytes
         """
         # Strip off the varint length delimiter bytes
-        wrapper_bytes, wrapper_bytes_len = pb_reader.decode_varint(BytesIO(value), mask=32)
+        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
         value = value[wrapper_bytes_len:]
         return value
 
@@ -331,15 +338,14 @@ class MMKVParser:
 
     def reset(self) -> None:
         """
-        Resets the instance variabls all back to original __init__ state
+        Resets the instance variables all back to original __init__ state
 
         :return: None
         """
         self.mmkv_file: Optional[BufferedIOBase] = None
         self.crc_file: Optional[BufferedIOBase] = None
         self.file_size: Optional[int] = None
-        self.header_bytes: Optional[bytes] = None           # Should be 8 bytes after initialization
+        self.header_bytes: Optional[bytes] = None  # Should be 8 bytes after initialization
         self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
         self.pos = 0
         return None
-

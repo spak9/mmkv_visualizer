@@ -9,7 +9,7 @@ from src.mmkv_parser import MMKVParser, decode_unsigned_varint, decode_signed_va
 
 class TestVarintDecoder(unittest.TestCase):
 	"""
-	Test Class for testing the varint decoders
+	Test Class for testing the varint decoders.
 	"""
 	def test_positive_int32(self):
 		""" Typical int32 varint """
@@ -34,6 +34,7 @@ class TestVarintDecoder(unittest.TestCase):
 		value_1 = decode_signed_varint(BytesIO(b'\x80\x80\x80\x80\x80\x80\x80\x80\x80\x01'), mask=64)[0]
 		value_2 = -1 * (1 << 63)  # -9223372036854775808
 		self.assertEqual(value_1, value_2)
+
 
 
 if __name__ == "__main__":
