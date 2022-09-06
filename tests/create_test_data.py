@@ -23,7 +23,7 @@ def create_data_all_types():
     kv = mmkv.MMKV('data_all_types')
 
     # 1. int32 - MAX Positive Number
-    kv.set((1 << 31) - 1 , 'int32_pkey')
+    kv.set((1 << 31) - 1, 'int32_pkey')
 
     # 2. int32 - MAX Negative Number (10-bytes needed)
     kv.set(-1 * (1 << 31), 'int32_nkey')

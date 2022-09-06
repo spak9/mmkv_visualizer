@@ -46,6 +46,8 @@ def decode_unsigned_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tup
                 result = ctypes.c_uint64(result).value
             else:
                 result = ctypes.c_uint32(result).value
+            break
+
         byte = buffered_base.read(1)
         bytes_read += 1
         if not byte:
