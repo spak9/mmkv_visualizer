@@ -41,13 +41,16 @@ class TestMMKVParser(unittest.TestCase):
 	Test Class for testing the MMKVParser class
 	"""
 	def test_mmkv_parser_init_with_str(self):
-		mmkv_file = open('data_all_types', 'rb').read().hex()
-		mmkv_parser = MMKVParser(mmkv_file_data=mmkv_file)
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f.read().hex())
 
 	def test_mmkv_parser_init_with_bufferediobase(self):
-		mmkv_file = open('data_all_types', 'rb')
-		mmkv_parser = MMKVParser(mmkv_file_data=mmkv_file)
-		mmkv_file.close()
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+
+	def test_mmkv_parser_init_with_buffer_empty(self):
+		with self.assertRaises(ValueError):
+			MMKVParser(mmkv_file_data=BytesIO(b''))
 
 
 
