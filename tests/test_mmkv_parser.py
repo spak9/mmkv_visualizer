@@ -36,6 +36,20 @@ class TestVarintDecoder(unittest.TestCase):
 		self.assertEqual(value_1, value_2)
 
 
+class TestMMKVParser(unittest.TestCase):
+	"""
+	Test Class for testing the MMKVParser class
+	"""
+	def test_mmkv_parser_init_with_str(self):
+		mmkv_file = open('data_all_types', 'rb').read().hex()
+		mmkv_parser = MMKVParser(mmkv_file_data=mmkv_file)
+
+	def test_mmkv_parser_init_with_bufferediobase(self):
+		mmkv_file = open('data_all_types', 'rb')
+		mmkv_parser = MMKVParser(mmkv_file_data=mmkv_file)
+		mmkv_file.close()
+
+
 
 if __name__ == "__main__":
 	unittest.main()

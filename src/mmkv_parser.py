@@ -119,13 +119,79 @@ class MMKVParser:
     user to decode arbitrary bytes into a protobuf type.
     """
 
-    def __init__(self):
-        self.mmkv_file: Optional[BufferedIOBase] = None
-        self.crc_file: Optional[BufferedIOBase] = None
-        self.file_size: Optional[int] = None
-        self.header_bytes: Optional[bytes] = None  # Should be 8 bytes after initialization
-        self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
+    def __init__(self, mmkv_file_data: Union[str, BufferedIOBase], crc_file_data: Union[str, BufferedIOBase, None] = None):
+        """
+        Initializes an `MMKVParser` instance with the required `mmkv_file_data`, which must be a `str` type used
+        for Pyodide-based Public API (a hexstring), or a Python `BufferedIOBase`, which should represent a natively 
+        prepared stream of data.
+
+        :param mmkv_file_data: A hexstring of mmkv data from Pyodide-based viewer, or native Python BufferedIOBase
+        :param crc_file_data: Same as mmkv_file_data, but defaults to None because the CRC check will be optional
+        """
+
+        # Handle cases with `mmkv_file_data`:
+        # 1. mmkv_file_data is str
+        if isinstance(mmkv_file_data, str):
+
+            # Check that it's a valid hexstring
+            int(mmkv_file_data, 16)
+
+            # Convert hexstring into a BufferedIOBase 
+            mmkv_file = BytesIO(bytes.fromhex(mmkv_file_data))
+
+        # 2. mmkv_file_data is BufferedIOBase
+        elif isinstance(mmkv_file_data, BufferedIOBase):
+            mmkv_file = mmkv_file_data
+
+        # 3. mmkv_file_data is neither
+        else:
+            raise TypeError(f'mmkv_file_data is of type {type(mmkv_file_data)} - should be either str or bytes.')
+
+        # Handle cases with `crc_file_data`:
+        # 1. crc_file_data is str
+        if isinstance(crc_file_data, str):
+
+            # Check that it's a valid hexstring
+            int(crc_file_data, 16)
+
+            # Convert hexstring into a BufferedIOBase 
+            crc_file = BytesIO(bytes.fromhex(crc_file_data))
+
+        # 2. crc_file_data is BufferedIOBase
+        elif isinstance(crc_file_data, BufferedIOBase):
+            crc_file = crc_file_data
+
+        # 3. crc_file_data is None
+        else:
+            crc_file = crc_file_data
+
+
+        # Initialize our files
+        self.mmkv_file = mmkv_file
+        self.crc_file = crc_file
         self.pos = 0
+
+
+        # Read in first 4 header bytes - [0:4] is total size
+        self.header_bytes = self.mmkv_file.read(4)
+        self.pos += 4
+ 
+        # [4:X] is garbage bytes basically (0xffffff07) or is another varint
+        x, bytes_read = decode_unsigned_varint(self.mmkv_file)
+        if (x, bytes_read) == (-1, -1):
+            raise ValueError('[+] Error while decoding the [4:X] bytes of the mmkv_file.')
+
+        self.pos += bytes_read
+
+
+
+    # def __init__(self):
+    #     self.mmkv_file: Optional[BufferedIOBase] = None
+    #     self.crc_file: Optional[BufferedIOBase] = None
+    #     self.file_size: Optional[int] = None
+    #     self.header_bytes: Optional[bytes] = None  # Should be 8 bytes after initialization
+    #     self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
+    #     self.pos = 0
 
     def initialize(self, mmkv_file: Union[str, bytes], crc_file: Union[str, bytes] = '') -> None:
         """
