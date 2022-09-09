@@ -40,6 +40,9 @@ class TestMMKVParser(unittest.TestCase):
 	"""
 	Test Class for testing the MMKVParser class
 	"""
+
+
+	# Tests for __init__()
 	def test_mmkv_parser_init_with_str(self):
 		with open('data_all_types', 'rb') as f:
 			mmkv_parser = MMKVParser(mmkv_file_data=f.read().hex())
@@ -51,6 +54,18 @@ class TestMMKVParser(unittest.TestCase):
 	def test_mmkv_parser_init_with_buffer_empty(self):
 		with self.assertRaises(ValueError):
 			MMKVParser(mmkv_file_data=BytesIO(b''))
+
+
+	# Tests for get_db_size()
+	def test_get_db_size_simple_int_keypair(self):
+		with open('data_int32_keypair', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+		self.assertEqual(mmkv_parser.get_db_size(), 11)
+
+	def test_get_db_size_simple_int_keypair_with_remove(self):
+		with open('data_int32_keypair_with_remove', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+		self.assertEqual(mmkv_parser.get_db_size(), 16)
 
 
 

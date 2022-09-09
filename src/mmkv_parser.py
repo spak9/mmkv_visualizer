@@ -174,14 +174,35 @@ class MMKVParser:
 
         # Read in first 4 header bytes - [0:4] is total size
         self.header_bytes: bytes = self.mmkv_file.read(4)
+        if len(self.header_bytes) != 4:
+            raise ValueError('[+] Error while reading mmkv_file. Header bytes was not 4 bytes.')
         self.pos += 4
  
+        # TODO: find out the purpose of the varint in [4:x] position
         # [4:X] is garbage bytes basically (0xffffff07) or is another varint
         x, bytes_read = decode_unsigned_varint(self.mmkv_file)
         if (x, bytes_read) == (-1, -1):
             raise ValueError('[+] Error while decoding the [4:X] bytes of the mmkv_file.')
 
         self.pos += bytes_read
+
+
+    # TODO: Test and understand the purpose of varint and how sizing work
+    #       seems to always include the [4:x] varint length + the rest of the db
+    def get_db_size(self) -> int:
+        """
+        Returns the actual size known to the MMKV API for querying data, but does
+        not account for previously logged data (older values).
+
+        :return: int size
+        """
+
+        # Length is stored as a little-endian int32
+        size = struct.unpack('<I', self.header_bytes[0:4])[0]
+        if isinstance(size, int):
+            return size
+        else:
+            raise TypeError(f'[+] Error while unpacking header bytes. Received {type(size)}')
 
 
 
@@ -192,64 +213,6 @@ class MMKVParser:
     #     self.header_bytes: Optional[bytes] = None  # Should be 8 bytes after initialization
     #     self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
     #     self.pos = 0
-
-    # def initialize(self, mmkv_file: Union[str, bytes], crc_file: Union[str, bytes] = '') -> None:
-    #     """
-    #     Initializes the MMKV data file and optionally the CRC32 file.
-    #     If either parameter is a string, then treat it as a file path, else if its bytes,
-    #     treat it as the actual binary MMKV data.
-
-    #     :param mmkv_file: absolute path filename string or bytes data
-    #     :param crc_file: absolute path filename string or bytes data
-    #     :return: None
-    #     """
-
-    #     # 1. `mmkv_file` is str
-    #     if isinstance(mmkv_file, str):
-
-    #         # Check if files exists w.r.t the "data" directory
-    #         mmkv_file_path: Path = Path(mmkv_file)
-    #         if not mmkv_file_path.exists():
-    #             print(f'[+] The following directory does not exist - {mmkv_file}')
-    #             sys.exit(-1)
-
-    #         # Set up the MMKV File object
-    #         self.mmkv_file = open(mmkv_file_path, 'rb')
-
-    #     # 2. `mmkv_file` is bytes
-    #     elif isinstance(mmkv_file, bytes):
-
-    #         # Set up the MMKV File object
-    #         self.mmkv_file = BytesIO(mmkv_file)
-
-    #     # 3. `mmkv_file` is not correct type
-    #     else:
-    #         raise TypeError(f'mmkv_file is of type {type(mmkv_file)} - should be either str or bytes.')
-
-    #     # Check file total size
-    #     # self.file_size = mmkv_file_path.stat().st_size
-    #     # print(f'[+] {mmkv_file_path.name} is {self.file_size} bytes')
-
-    #     # Read in first 4 header bytes - [0:4] is total size
-    #     self.header_bytes = self.mmkv_file.read(4)
-    #     self.pos += 4
-
-    #     # [4:X] is garbage bytes basically (0xffffff07)
-    #     x, bytes_read = decode_unsigned_varint(self.mmkv_file)
-    #     self.pos += bytes_read
-
-    #     return None
-
-    # def get_db_size(self) -> Optional[int]:
-    #     """
-    #     Returns the actual size of the MMKV database, that is, the size that the database knows about.
-
-    #     :return: int size or None on error
-    #     """
-    #     if not self.header_bytes:
-    #         raise TypeError('Header bytes is None. Please make sure to successfully initialize() db.')
-
-    #     return struct.unpack('<I', self.header_bytes[0:4])[0]
 
     # def decode_into_map(self) -> Optional[defaultdict]:
     #     """

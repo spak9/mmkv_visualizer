@@ -18,6 +18,9 @@ def create_data_all_types():
     test_data_file = Path('data_all_types')
     if test_data_file.exists():
         test_data_file.unlink()
+    test_data_file = Path('data_all_types.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
 
     # Create data within an MMKV file called "data_all_types")
     kv = mmkv.MMKV('data_all_types')
@@ -50,6 +53,63 @@ def create_data_all_types():
     kv.set(3.14, 'float_key')
 
 
+def create_int32_keypair():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_int32_keypair')
+    if test_data_file.exists():
+        print('remove')
+        test_data_file.unlink()
+    test_data_file = Path('data_int32_keypair.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_int32_keypair')
+    kv.set(4444, 'key')
+    print(kv.getInt('key'))
+
+
+def create_int32_keypair_with_remove():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_int32_keypair_with_remove')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('data_int32_keypair_with_remove.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_int32_keypair_with_remove')
+    kv.set(4444, 'key')
+    kv.remove('key')
+    print(kv.getInt('key'))
+
+
+def create_string_keypair():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_string_keypair')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('data_string_keypair.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_string_keypair')
+    kv.set('happy', 'key')
+    print(kv.getString('key'))
+
+
+def create_string_keypair_with_remove():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_string_keypair_with_remove')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('data_string_keypair_with_remove.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_string_keypair_with_remove')
+    kv.set('happy', 'key')
+    kv.remove('key')
+    print(kv.getString('key'))
 
 if __name__ == "__main__":
 
@@ -59,5 +119,11 @@ if __name__ == "__main__":
 
     create_data_all_types()
 
+    create_int32_keypair()
 
+    create_int32_keypair_with_remove()
+
+    create_string_keypair()
+
+    create_string_keypair_with_remove()
 
