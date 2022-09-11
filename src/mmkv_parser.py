@@ -1,6 +1,6 @@
 from io import BufferedIOBase, BytesIO
 from pathlib import Path
-from typing import Optional, List, Union, Tuple
+from typing import Optional, List, Union, Tuple, DefaultDict
 from collections import defaultdict
 
 import sys
@@ -19,7 +19,8 @@ def decode_unsigned_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tup
     Reads a base-128 varint from `buffered_base` and returns the unsigned result of the
     varint.
     This assumes a `mask` of 32-bits for decoding typical "int32" types. If you need to
-    decode an "int64" type, use a 64-bit mask
+    decode an "int64" type, use a 64-bit mask.
+    Note: this should always be used for reading varints denoting lengths
 
     :param buffered_base: A file-like object that will incremently read byte-by-byte
     :param mask: an int that denotes either a 32 or 64-bit type.
@@ -170,7 +171,7 @@ class MMKVParser:
         self.mmkv_file: BufferedIOBase = mmkv_file_data
         self.crc_file: Optional[BufferedIOBase] = crc_file_data
         self.pos: int = 0
-
+        self.decoded_map: DefaultDict[str, List[bytes]] = defaultdict(list)
 
         # Read in first 4 header bytes - [0:4] is total size
         self.header_bytes: bytes = self.mmkv_file.read(4)
@@ -191,8 +192,10 @@ class MMKVParser:
     #       seems to always include the [4:x] varint length + the rest of the db
     def get_db_size(self) -> int:
         """
-        Returns the actual size known to the MMKV API for querying data, but does
-        not account for previously logged data (older values).
+        Returns the actual size known to the MMKV API for querying data. This includes older
+        logged data that the actual MMKV API does not have the ability to query. 
+        Note: It is possible the size may be 0, however it's not known as to why MMKV does this.
+        Will account for this wherever used. 
 
         :return: int size
         """
@@ -200,9 +203,77 @@ class MMKVParser:
         # Length is stored as a little-endian int32
         size = struct.unpack('<I', self.header_bytes[0:4])[0]
         if isinstance(size, int):
+            print(f'[+] get_db_size() - DB size is {size}.')
             return size
         else:
             raise TypeError(f'[+] Error while unpacking header bytes. Received {type(size)}')
+
+
+    def decode_into_map(self) -> DefaultDict[str, List[bytes]]:
+        """
+        A best-effort approach on linearly parsing the `mmkv_file` stream and building up 
+        dictionary of keys mapped to a list of values, with the most recent value being at the lowest index.
+
+        :return: a built up defaultdict, which is also an instance variable
+        """
+
+        # Get size of database
+        db_size = self.get_db_size()
+
+        # Iterate through the database and build-up our dictionary
+        while self.pos < db_size:
+
+            # Parse the key length 
+            key_length, bytes_read = decode_unsigned_varint(self.mmkv_file, mask=32)
+
+            # Check if parsing key length failed
+            if (key_length, bytes_read) == (-1, -1):
+                print('[+] decode_into_map() - cannot parse key length, breaking.')
+                break
+            if key_length == 0:
+                print('[+] decode_into_map() - key length is 0, breaking')
+                break
+
+            self.pos += bytes_read
+
+            try:
+                # Read the key (always UTF-8 String)
+                key_bytes = self.mmkv_file.read(key_length)
+                key = key_bytes.decode(encoding='utf-8')
+                self.pos += key_length
+
+            except UnicodeDecodeError:
+                print(f'[+] decode_into_map() - Error trying to decode {key_bytes!r}. breaking')
+                break
+
+            # Parse the value length
+            value_length, bytes_read = decode_unsigned_varint(self.mmkv_file, mask=32)
+
+            # Check if parsing value length failed
+            if (value_length, bytes_read) == (-1, -1):
+                print('[+] decode_into_map() - cannot parse value length, breaking.')
+                break
+
+            # IMPORTANT - a key-value pair that was removed via the MMKV API will have a 
+            # valid key, but will be followed by a null byte, signifying that the key-value pair 
+            # was removed.
+            # eg. <key length> | <key> | \x00
+            if value_length == 0:
+                print('[+] decode_into_map() - value length is 0, KV pair was removed. Continuing')
+                self.pos += bytes_read
+                continue
+
+            # Parse the value (bytes which will then be iterpretable, since there's type tied to data)
+            self.pos += bytes_read
+
+            value_bytes = self.mmkv_file.read(value_length)
+            self.pos += value_length
+
+            # Update our decoded_map
+            self.decoded_map[key].append(value_bytes)
+
+        return self.decoded_map
+
 
 
 

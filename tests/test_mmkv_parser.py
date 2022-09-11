@@ -68,6 +68,21 @@ class TestMMKVParser(unittest.TestCase):
 		self.assertEqual(mmkv_parser.get_db_size(), 16)
 
 
+	# Tests for decode_into_map()
+	def test_decode_map_simple_int_keypair(self):
+		with open('data_int32_keypair', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			m = {'key':[b'\xdc\x22']}
+			self.assertEqual(mmkv_map, m)
+
+	# def test_decode_map_all_types(self):
+	# 	with open('data_all_types', 'rb') as f:
+	# 		mmkv_parser = MMKVParser(mmkv_file_data=f)
+	# 		mmkv_map = mmkv_parser.decode_into_map()
+	# 		print(mmkv_map)
+
+
 
 if __name__ == "__main__":
 	unittest.main()

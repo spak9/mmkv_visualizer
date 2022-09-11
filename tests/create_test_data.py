@@ -57,7 +57,6 @@ def create_int32_keypair():
     # Check if test data exist, if so, delete, so we don't append
     test_data_file = Path('data_int32_keypair')
     if test_data_file.exists():
-        print('remove')
         test_data_file.unlink()
     test_data_file = Path('data_int32_keypair.crc')
     if test_data_file.exists():
