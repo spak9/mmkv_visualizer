@@ -269,7 +269,7 @@ class MMKVParser:
             self.pos += value_length
 
             # Update our decoded_map
-            self.decoded_map[key].append(value_bytes)
+            self.decoded_map[key].insert(0, value_bytes)
 
         return self.decoded_map
 

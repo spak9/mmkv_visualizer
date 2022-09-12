@@ -95,7 +95,42 @@ class TestMMKVParser(unittest.TestCase):
 			})
 			self.assertEqual(mmkv_map, m)
 
+	def test_decode_map_int_updates(self):
+		with open('data_int32_keypair_with_updates', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			
+			m = defaultdict(list, {
+				'int_key': [b'\xe8\x07', b'\x64', b'\x0a', b'\x01']
+			})
+			self.assertEqual(mmkv_map, m)
 
+	def test_decode_map_string_updates(self):
+		with open('data_string_keypair_with_updates', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			
+			m = defaultdict(list, {
+				'string_key': [b'\x04\xf0\x9f\x98\x81',
+				b'\x04\xf0\xa0\x9c\x8e',
+				b'\x02\xc3\x98',
+				b'\x06\x73\x74\x65\x76\x65\x6e']
+			})
+			self.assertEqual(mmkv_map, m)
+
+	def test_decode_map_float_updates(self):
+		with open('data_float_keypair_with_updates', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			l = [b'\x1f\x85\xeb\x51\xb8\x1e\x09\x40',
+				b'\x54\xe3\xa5\x9b\xc4\x20\x09\x40',
+				b'\x36\x3c\xbd\x52\x96\x21\x09\x40',
+				b'\x6f\x9e\xea\x90\x9b\x21\x09\x40']
+			l.reverse()
+			m = defaultdict(list, {
+				'float_key': l
+			})
+			self.assertEqual(mmkv_map, m)
 
 
 if __name__ == "__main__":
