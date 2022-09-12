@@ -174,3 +174,9 @@ if __name__ == "__main__":
 
     create_string_keypair_with_remove()
 
+    create_int32_keypair_with_updates()
+
+    create_string_keypair_with_updates()
+
+    create_float_keypair_with_updates()
+
