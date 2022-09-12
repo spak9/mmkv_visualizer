@@ -10,6 +10,7 @@ types within MMKV (the protobuf wire types).
 def create_data_all_types():
     """
     Create basic test data with all types.
+    No removes.
 
     :return:
     """
@@ -109,6 +110,53 @@ def create_string_keypair_with_remove():
     kv.set('happy', 'key')
     kv.remove('key')
     print(kv.getString('key'))
+
+
+# Testing update operations
+def create_int32_keypair_with_updates():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_int32_keypair_with_updates')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('data_int32_keypair_with_updates.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_int32_keypair_with_updates')
+    kv.set(1, 'int_key')
+    kv.set(10, 'int_key')
+    kv.set(100, 'int_key')
+    kv.set(1000, 'int_key')
+
+def create_string_keypair_with_updates():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_string_keypair_with_updates')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('data_string_keypair_with_updates.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_string_keypair_with_updates')
+    kv.set('steven', 'string_key')
+    kv.set('Ø', 'string_key')
+    kv.set('𠜎', 'string_key')
+    kv.set('😁', 'string_key')
+
+def create_float_keypair_with_updates():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_float_keypair_with_updates')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('data_float_keypair_with_updates.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_float_keypair_with_updates')
+    kv.set(3.14, 'float_key')
+    kv.set(3.141, 'float_key')
+    kv.set(3.1414, 'float_key')
+    kv.set(3.14141, 'float_key')
 
 if __name__ == "__main__":
 

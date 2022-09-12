@@ -4,6 +4,7 @@ import unittest
 sys.path.append('..')  # Used for the `src` relative import
 
 from io import BytesIO
+from collections import defaultdict
 from src.mmkv_parser import MMKVParser, decode_unsigned_varint, decode_signed_varint
 
 
@@ -76,11 +77,24 @@ class TestMMKVParser(unittest.TestCase):
 			m = {'key':[b'\xdc\x22']}
 			self.assertEqual(mmkv_map, m)
 
-	# def test_decode_map_all_types(self):
-	# 	with open('data_all_types', 'rb') as f:
-	# 		mmkv_parser = MMKVParser(mmkv_file_data=f)
-	# 		mmkv_map = mmkv_parser.decode_into_map()
-	# 		print(mmkv_map)
+	def test_decode_map_all_types(self):
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			
+			m = defaultdict(list, {
+				'int32_pkey': [b'\xff\xff\xff\xff\x07'],
+				'int32_nkey': [b'\x80\x80\x80\x80\xf8\xff\xff\xff\xff\x01'],
+				'int64_pkey': [b'\xff\xff\xff\xff\xff\xff\xff\xff\x7f'],
+				'int64_nkey': [b'\x80\x80\x80\x80\x80\x80\x80\x80\x80\x01'],
+				'bool_true_key':[b'\x01'],
+				'bool_false_key':[b'\x00'],
+				'string_key': [b'\x0a\x73\x74\x65\x76\x65\x6e\x20\x70\x61\x6b'],
+				'bytes_key': [b'\x0a\x73\x6f\x6d\x65\x20\x62\x79\x74\x65\x73'],
+				'float_key': [b'\x1f\x85\xeb\x51\xb8\x1e\x09\x40']
+			})
+			self.assertEqual(mmkv_map, m)
+
 
 
 

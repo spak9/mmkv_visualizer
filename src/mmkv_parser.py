@@ -248,6 +248,7 @@ class MMKVParser:
 
             # Parse the value length
             value_length, bytes_read = decode_unsigned_varint(self.mmkv_file, mask=32)
+            self.pos += bytes_read
 
             # Check if parsing value length failed
             if (value_length, bytes_read) == (-1, -1):
@@ -264,8 +265,6 @@ class MMKVParser:
                 continue
 
             # Parse the value (bytes which will then be iterpretable, since there's type tied to data)
-            self.pos += bytes_read
-
             value_bytes = self.mmkv_file.read(value_length)
             self.pos += value_length
 
