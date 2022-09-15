@@ -97,21 +97,6 @@ def create_string_keypair():
     print(kv.getString('key'))
 
 
-def create_string_keypair_with_remove():
-    # Check if test data exist, if so, delete, so we don't append
-    test_data_file = Path('data_string_keypair_with_remove')
-    if test_data_file.exists():
-        test_data_file.unlink()
-    test_data_file = Path('data_string_keypair_with_remove.crc')
-    if test_data_file.exists():
-        test_data_file.unlink()
-
-    kv = mmkv.MMKV('data_string_keypair_with_remove')
-    kv.set('happy', 'key')
-    kv.remove('key')
-    print(kv.getString('key'))
-
-
 # Testing update operations
 def create_int32_keypair_with_updates():
     # Check if test data exist, if so, delete, so we don't append
@@ -157,6 +142,29 @@ def create_float_keypair_with_updates():
     kv.set(3.141, 'float_key')
     kv.set(3.1414, 'float_key')
     kv.set(3.14141, 'float_key')
+
+
+# Testing complex remove operations
+def create_string_keypair_with_remove():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('data_string_keypair_with_remove')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('data_string_keypair_with_remove.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('data_string_keypair_with_remove')
+    kv.set('value_1', 'key')
+    kv.set('value_2', 'key')
+    kv.remove('key')
+    kv.remove('key')
+    kv.set('value_3', 'key')
+    kv.set('value_4', 'key')
+    kv.remove('key')
+    print(kv.getString('key'))
+
+
 
 if __name__ == "__main__":
 
