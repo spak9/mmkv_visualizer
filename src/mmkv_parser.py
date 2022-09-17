@@ -188,8 +188,6 @@ class MMKVParser:
         self.pos += bytes_read
 
 
-    # TODO: Test and understand the purpose of varint and how sizing work
-    #       seems to always include the [4:x] varint length + the rest of the db
     def get_db_size(self) -> int:
         """
         Returns the actual size known to the MMKV API for querying data. This includes older
