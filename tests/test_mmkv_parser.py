@@ -132,6 +132,19 @@ class TestMMKVParser(unittest.TestCase):
 			})
 			self.assertEqual(mmkv_map, m)
 
+	def test_decode_map_string_removes(self):
+		with open('data_string_keypair_with_remove', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			
+			m = defaultdict(list, {
+				'key': [
+				b'\x07\x76\x61\x6c\x75\x65\x5f\x34',
+				b'\x07\x76\x61\x6c\x75\x65\x5f\x33'
+				]
+			})
+			self.assertEqual(mmkv_map, m)
+
 
 if __name__ == "__main__":
 	unittest.main()

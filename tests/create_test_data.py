@@ -155,6 +155,7 @@ def create_string_keypair_with_remove():
         test_data_file.unlink()
 
     kv = mmkv.MMKV('data_string_keypair_with_remove')
+    kv.getString('key')
     kv.set('old_1', 'key')
     kv.set('old_2', 'key')
     kv.set('old_3', 'key')
