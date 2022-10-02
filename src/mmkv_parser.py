@@ -372,15 +372,18 @@ class MMKVParser:
         value = value[wrapper_bytes_len:]
         return value
 
-    def decode_as_float(self, value: Union[str, bytes]) -> float:
+    def decode_as_float(self, value: Union[str, bytes]) -> Optional[float]:
         """
         Decodes `value` as a double (8-bytes), which is a float type in Python.
 
         :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
-        :return: Returns the float result
+        :return: Returns the float result, or None on surely invalid `value`
         """
         if isinstance(value, str):
             value = bytes.fromhex(value)
+
+        if len(value) != 8:
+            print(f'[+] Could not float decode {value} due to length')
 
         return struct.unpack('<d', value)[0]
 
