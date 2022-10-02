@@ -146,5 +146,33 @@ class TestMMKVParser(unittest.TestCase):
 			self.assertEqual(mmkv_map, m)
 
 
+	# Tests for various "decode_as_<type>()" functions
+	def test_decode_bool(self):
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			true_bool = mmkv_map.get('bool_true_key')[0]
+			false_bool = mmkv_map.get('bool_false_key')[0]
+
+			self.assertEqual(True, mmkv_parser.decode_as_bool(true_bool))
+			self.assertEqual(False, mmkv_parser.decode_as_bool(false_bool))
+			self.assertEqual(None, mmkv_parser.decode_as_bool(b'\x02'))
+
+	def test_decode_string(self):
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			string = mmkv_map.get('string_key')[0]
+
+			self.assertEqual('steven pak', mmkv_parser.decode_as_string(string))
+
+	def test_decode_string_2(self):
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			hexstr = mmkv_map.get('string_key')[0].hex()
+			self.assertEqual('steven pak', mmkv_parser.decode_as_string(hexstr))
+							
+
 if __name__ == "__main__":
 	unittest.main()

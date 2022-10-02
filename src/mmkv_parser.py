@@ -272,98 +272,117 @@ class MMKVParser:
         return self.decoded_map
 
 
+    def decode_as_bool(self, value: Union[str, bytes]) -> Optional[bool]:
+        """
+        Attempts to decode `value` as a boolean.
 
-    # def decode_as_bool(self, value: bytes) -> Optional[bool]:
-    #     """
-    #     Attempts to decode `value` as a boolean.
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the boolean result if possible, or None if not
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        if value == b'\x01':
+            return True
+        elif value == b'\x00':
+            return False
+        else:
+            print(f'[+] Could not bool decode {value!r}')
+            return None
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the boolean result if possible, or None if not
-    #     """
-    #     if value == b'\x01':
-    #         return True
-    #     elif value == b'\x00':
-    #         return False
-    #     else:
-    #         return None
+    def decode_as_int32(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as a signed 32-bit int.
 
-    # def decode_as_int32(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as a signed 32-bit int.
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the signed 32-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_signed_varint(BytesIO(value), mask=32)[0]
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the signed 32-bit int result
-    #     """
-    #     return decode_signed_varint(BytesIO(value), mask=32)[0]
+    def decode_as_int64(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as a signed 64-bit int.
 
-    # def decode_as_int64(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as a signed 64-bit int.
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the signed 64-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_signed_varint(BytesIO(value), mask=64)[0]
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the signed 64-bit int result
-    #     """
-    #     return decode_signed_varint(BytesIO(value), mask=64)[0]
+    def decode_as_uint32(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as an unsigned 32-bit int.
 
-    # def decode_as_uint32(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as an unsigned 32-bit int.
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the unsigned 32-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_unsigned_varint(BytesIO(value), mask=32)[0]
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the unsigned 32-bit int result
-    #     """
-    #     return decode_unsigned_varint(BytesIO(value), mask=32)[0]
+    def decode_as_uint64(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as an unsigned 64-bit int.
 
-    # def decode_as_uint64(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as an unsigned 64-bit int.
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the unsigned 64-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_unsigned_varint(BytesIO(value), mask=64)[0]
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the unsigned 64-bit int result
-    #     """
-    #     return decode_unsigned_varint(BytesIO(value), mask=64)[0]
+    def decode_as_string(self, value: Union[str, bytes]) -> Optional[str]:
+        """
+        Attempts to decodes `value` as a UTF-8 string.
+        Note: This assumes that `value` has the "erroneous" varint length wrapper
 
-    # def decode_as_string(self, value: bytes) -> Optional[str]:
-    #     """
-    #     Attempts to decodes `value` as a UTF-8 string.
-    #     Note: This assumes that `value` has the "erroneous" varint length wrapper
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the UTF-8 decoded string, or None if not possible
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the UTF-8 decoded string, or None if not possible
-    #     """
-    #     # Strip off the varint length delimiter bytes
-    #     wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
+        # Strip off the varint length delimiter bytes
+        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
 
-    #     try:
-    #         if wrapper_bytes_len >= len(value):
-    #             raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
-    #         value = value[wrapper_bytes_len:]
-    #         return value.decode('utf-8')
-    #     except:
-    #         print(f'[+] Could not UTF-8 decode [{value}]')
-    #         return None
+        try:
+            if wrapper_bytes_len >= len(value):
+                raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
+            value = value[wrapper_bytes_len:]
+            return value.decode('utf-8')
+        except:
+            print(f'[+] Could not UTF-8 decode {value!r}')
+            return None
 
-    # def decode_as_bytes(self, value: bytes) -> bytes:
-    #     """
-    #     Decodes `value` as bytes.
-    #     Note: This assumes that `value` has the "erroneous" varint length wrapper
+    def decode_as_bytes(self, value: Union[str, bytes]) -> bytes:
+        """
+        Decodes `value` as bytes.
+        Note: This assumes that `value` has the "erroneous" varint length wrapper
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the bytes
-    #     """
-    #     # Strip off the varint length delimiter bytes
-    #     wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
-    #     value = value[wrapper_bytes_len:]
-    #     return value
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the bytes
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
 
-    # def decode_as_float(self, value: bytes) -> float:
-    #     """
-    #     Decodes `value` as a double (8-bytes), which is a float type in Python.
+        # Strip off the varint length delimiter bytes
+        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
+        value = value[wrapper_bytes_len:]
+        return value
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the float result
-    #     """
-    #     return struct.unpack('<d', value)[0]
+    def decode_as_float(self, value: Union[str, bytes]) -> float:
+        """
+        Decodes `value` as a double (8-bytes), which is a float type in Python.
+
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the float result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+
+        return struct.unpack('<d', value)[0]
 
     # def reset(self) -> None:
     #     """
