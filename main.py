@@ -5,4 +5,3 @@ app = FastAPI()
 
 app.mount('', StaticFiles(directory="src/", html=True), name="static")
 
-
