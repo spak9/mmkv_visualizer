@@ -1,6 +1,13 @@
-from fastapi import FastAPI
+from starlette.responses import FileResponse 
+from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI()
 
-app.mount('', StaticFiles(directory="src/", html=True), name="static")
+
+@app.get("/")
+async def read_index():
+    return FileResponse('src/frontend/pre_index.html')
+
+
