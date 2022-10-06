@@ -1,11 +1,11 @@
 import sys
 import unittest
 
-sys.path.append('..')  # Used for the `src` relative import
+sys.path.append('../frontend/public')  # Used for the `src` relative import
 
 from io import BytesIO
 from collections import defaultdict
-from src.mmkv_parser import MMKVParser, decode_unsigned_varint, decode_signed_varint
+from mmkv_parser import MMKVParser, decode_unsigned_varint, decode_signed_varint
 
 
 class TestVarintDecoder(unittest.TestCase):
