@@ -4,6 +4,8 @@
 body {
     color: black;
     background-color: #f7f7f2;
+}
+#app {
     display: flex;
     flex-direction: column;
     height: 100vh;
