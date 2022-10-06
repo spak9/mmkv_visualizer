@@ -389,7 +389,7 @@ async function getMMKVParser() {
       // mmkv_parser
 
     // Convert our MMKVParser PyProxy into a `PyProxy`
-    return pyProxy//.toJs()
+    return pyProxy.toJs()
 }
 
 

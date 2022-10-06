@@ -1,9 +1,3 @@
-<svelte:head>
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
-  <script type="text/javascript" src="/parse.js"></script>
-</svelte:head>
-
-
 <script>
 
 
