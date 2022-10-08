@@ -1,9 +1,20 @@
 <script>
+
+	/* Functions */
+	async function onDrop(e) {
+		e.preventDefault()
+		let data = await e.dataTransfer.files[0].arrayBuffer()
+		console.log(data)
+	}
+
+	function onDragOver(e) {
+		e.preventDefault()
+	}
 	
 </script>
 
 <!-- HTML - Flex Child and Container -->
-<div class="page-main">
+<div class="page-main" on:drop={onDrop} on:dragover={onDragOver}>
   <div class="instructions">
     <p>Drag & drop or select an MMKV file to visualize</p>
     <div class="main-buttons">
