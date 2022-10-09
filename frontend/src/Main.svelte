@@ -1,8 +1,28 @@
 <script>
 
+	
+	let pyodide = null
+	let mmkvParser = null
+	let mmkvParserPython = null
+
+	// On creation, 
+
 	/* Functions */
+	async function setupPyodideAndCode () {
+		pyodide = await loadPyodide()
+		mmkvParserPython = await (await fetch("/mmkv_parser.py")).text()
+	}
+	
+	async function getMMKVParser() {
+		
+	}
+
 	async function onDrop(e) {
 		e.preventDefault()
+
+		if (e.dataTransfer.files) {
+			let mmkvFile = event.dataTransfer.files[0]
+		}
 		let data = await e.dataTransfer.files[0].arrayBuffer()
 		console.log(data)
 	}
@@ -10,19 +30,25 @@
 	function onDragOver(e) {
 		e.preventDefault()
 	}
+
+
 	
 </script>
 
 <!-- HTML - Flex Child and Container -->
 <div class="page-main" on:drop={onDrop} on:dragover={onDragOver}>
-  <div class="instructions">
-    <p>Drag & drop or select an MMKV file to visualize</p>
-    <div class="main-buttons">
-      <label for="mmkv-input">Open File</label>
-      <input type="file" id="mmkv-input" hidden>
-      <button>Open Sample Data</button>
-    </div>
-  </div>
+	{#await setupPyodideAndCode()}
+		<h3>Loading MMKV Parser...</h3>
+	{:then}
+	  <div class="instructions">
+	    <p>Drag & drop or select an MMKV file to visualize</p>
+	    <div class="main-buttons">
+	      <label for="mmkv-input">Open File</label>
+	      <input type="file" id="mmkv-input" hidden>
+	      <button>Open Sample Data</button>
+	    </div>
+	  </div>
+	{/await}
 </div>
 
 <!-- Styles -->
