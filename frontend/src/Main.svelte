@@ -1,42 +1,90 @@
 <script>
 
-	
-	let pyodide = null
-	let mmkvParser = null
-	let mmkvParserPython = null
+	let active = false				// A bool for whether ".page_main" should be highlighted
+	let pyodide
+	let mmkvMap
+	let mmkvParser
+	let mmkvParserPythonCode
 
-	// On creation, 
+	// Prepare functionality for converting [ArrayBuffer] to hex string
+	const byteToHex = [];
+	for (let n = 0; n <= 0xff; ++n)
+	{
+	    const hexOctet = n.toString(16).padStart(2, "0");
+	    byteToHex.push(hexOctet);
+	}
 
 	/* Functions */
+
+	// Called when initialization of the component - will load in and set up the
+	// global "pyodide" object and prepares the `mmkv_parser.py` code via text.
+	// We prepare the code prior because the __init__ requires data. 
 	async function setupPyodideAndCode () {
 		pyodide = await loadPyodide()
-		mmkvParserPython = await (await fetch("/mmkv_parser.py")).text()
-	}
-	
-	async function getMMKVParser() {
-		
+		mmkvParserPythonCode = await (await fetch("/mmkv_parser.py")).text()
 	}
 
+	async function loadFileIntoMMKVParser(mmkvFile) {
+		// Reset prior MMKV values, if any
+		mmkvParser = undefined
+		mmkvMap = undefined
+
+		let mmkvHexString = hex(await mmkvFile.arrayBuffer())
+		let init = `mmkv_parser = MMKVParser("${mmkvHexString}")`
+		let code = `
+${mmkvParserPythonCode}
+${init}
+mmkv_parser`
+
+		mmkvParser = pyodide.runPython(code)
+		mmkvMap = mmkvParser.decode_into_map().toJs()
+		console.log(mmkvMap)
+	}
+
+	// Callback when the user drops a file 
 	async function onDrop(e) {
 		e.preventDefault()
-
 		if (e.dataTransfer.files) {
 			let mmkvFile = event.dataTransfer.files[0]
+			await loadFileIntoMMKVParser(mmkvFile)
 		}
-		let data = await e.dataTransfer.files[0].arrayBuffer()
-		console.log(data)
+		active = false
 	}
 
 	function onDragOver(e) {
 		e.preventDefault()
+		active = true
+	}
+
+	async function onChange(e) {
+		if(e.target.files) {
+			let mmkvFile = e.target.files[0]
+			await loadFileIntoMMKVParser(mmkvFile)
+		}
 	}
 
 
-	
+
+	// Converts an `arrayBuffer` into a hex string
+	function hex(arrayBuffer)
+	{
+	    const buff = new Uint8Array(arrayBuffer);
+	    const hexOctets = [];
+	    for (let i = 0; i < buff.length; ++i)
+	        hexOctets.push(byteToHex[buff[i]]);
+
+	    return hexOctets.join("");
+	}
+
 </script>
 
+
 <!-- HTML - Flex Child and Container -->
-<div class="page-main" on:drop={onDrop} on:dragover={onDragOver}>
+<div class="page-main" class:highlight={active}
+		on:dragenter={(e) => active = true}
+		on:dragleave={(e) => active = false}
+		on:drop={onDrop} 
+		on:dragover={onDragOver}>
 	{#await setupPyodideAndCode()}
 		<h3>Loading MMKV Parser...</h3>
 	{:then}
@@ -44,12 +92,13 @@
 	    <p>Drag & drop or select an MMKV file to visualize</p>
 	    <div class="main-buttons">
 	      <label for="mmkv-input">Open File</label>
-	      <input type="file" id="mmkv-input" hidden>
+	      <input on:change={onChange} type="file" id="mmkv-input" hidden>
 	      <button>Open Sample Data</button>
 	    </div>
 	  </div>
 	{/await}
 </div>
+
 
 <!-- Styles -->
 <style>
@@ -64,7 +113,6 @@
 	  border-radius: 16px;
 	  height: 80%;            /* Used to make sure table doesn't make div taller */
 	  margin: 16px;
-
 
 	  /* Flex Items */
 	  flex: 0 0 80%;
@@ -107,14 +155,14 @@
 	}
 
 	table {
-  border-collapse: collapse;
-  border: 2px solid rgb(200,200,200);
-  letter-spacing: 1px;
-  font-size: 0.8rem;
-  empty-cells: hide;
-  align-self: flex-start;
-  width: 100%;
-}
+	  border-collapse: collapse;
+	  border: 2px solid rgb(200,200,200);
+	  letter-spacing: 1px;
+	  font-size: 0.8rem;
+	  empty-cells: hide;
+	  align-self: flex-start;
+	  width: 100%;
+	}
 
 	td, th {
 	  border: 1px solid rgb(190,190,190);
