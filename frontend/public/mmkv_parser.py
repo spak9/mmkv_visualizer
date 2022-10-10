@@ -384,6 +384,7 @@ class MMKVParser:
 
         if len(value) != 8:
             print(f'[+] Could not float decode {value} due to length')
+            return None
 
         return struct.unpack('<d', value)[0]
 

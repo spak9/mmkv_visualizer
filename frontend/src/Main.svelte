@@ -1,5 +1,6 @@
 <script>
 
+	import { mmkvParserStore } from './MMKVParserStore.mjs'
 	import MMKVTable from "./MMKVTable.svelte"
 	import { hex } from './Util.mjs'
 
@@ -40,6 +41,7 @@ ${init}
 mmkv_parser`
 
 		mmkvParser = pyodide.runPython(code)
+		mmkvParserStore.set(mmkvParser)
 		mmkvMap = mmkvParser.decode_into_map().toJs()
 		console.log(mmkvMap)
 	}
