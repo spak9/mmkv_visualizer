@@ -1,11 +1,11 @@
 import sys
 import unittest
 
-sys.path.append('..')  # Used for the `src` relative import
+sys.path.append('../frontend/public')  # Used for the `src` relative import
 
 from io import BytesIO
 from collections import defaultdict
-from src.mmkv_parser import MMKVParser, decode_unsigned_varint, decode_signed_varint
+from mmkv_parser import MMKVParser, decode_unsigned_varint, decode_signed_varint
 
 
 class TestVarintDecoder(unittest.TestCase):
@@ -145,6 +145,34 @@ class TestMMKVParser(unittest.TestCase):
 			})
 			self.assertEqual(mmkv_map, m)
 
+
+	# Tests for various "decode_as_<type>()" functions
+	def test_decode_bool(self):
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			true_bool = mmkv_map.get('bool_true_key')[0]
+			false_bool = mmkv_map.get('bool_false_key')[0]
+
+			self.assertEqual(True, mmkv_parser.decode_as_bool(true_bool))
+			self.assertEqual(False, mmkv_parser.decode_as_bool(false_bool))
+			self.assertEqual(None, mmkv_parser.decode_as_bool(b'\x02'))
+
+	def test_decode_string(self):
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			string = mmkv_map.get('string_key')[0]
+
+			self.assertEqual('steven pak', mmkv_parser.decode_as_string(string))
+
+	def test_decode_string_2(self):
+		with open('data_all_types', 'rb') as f:
+			mmkv_parser = MMKVParser(mmkv_file_data=f)
+			mmkv_map = mmkv_parser.decode_into_map()
+			hexstr = mmkv_map.get('string_key')[0].hex()
+			self.assertEqual('steven pak', mmkv_parser.decode_as_string(hexstr))
+							
 
 if __name__ == "__main__":
 	unittest.main()

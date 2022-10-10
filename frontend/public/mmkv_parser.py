@@ -146,7 +146,7 @@ class MMKVParser:
 
         # 3. mmkv_file_data is neither
         else:
-            raise TypeError(f'mmkv_file_data is of type {type(mmkv_file_data)} - should be either str or bytes.')
+            raise TypeError(f'mmkv_file_data is of type {type(mmkv_file_data)} - should be either hex str or bytes.')
 
         # Handle cases with `crc_file_data`:
         # 1. crc_file_data is str
@@ -210,7 +210,7 @@ class MMKVParser:
     def decode_into_map(self) -> DefaultDict[str, List[bytes]]:
         """
         A best-effort approach on linearly parsing the `mmkv_file` stream and building up 
-        dictionary of keys mapped to a list of values, with the most recent value being at the lowest index.
+        dictionary of keys mapped to a list of bytes values, with the most recent value being at the lowest index.
 
         :return: a built up defaultdict, which is also an instance variable
         """
@@ -272,166 +272,121 @@ class MMKVParser:
         return self.decoded_map
 
 
+    def decode_as_bool(self, value: Union[str, bytes]) -> Optional[bool]:
+        """
+        Attempts to decode `value` as a boolean.
 
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the boolean result if possible, or None if not
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        if value == b'\x01':
+            return True
+        elif value == b'\x00':
+            return False
+        else:
+            print(f'[+] Could not bool decode {value!r}')
+            return None
 
-    # def __init__(self):
-    #     self.mmkv_file: Optional[BufferedIOBase] = None
-    #     self.crc_file: Optional[BufferedIOBase] = None
-    #     self.file_size: Optional[int] = None
-    #     self.header_bytes: Optional[bytes] = None  # Should be 8 bytes after initialization
-    #     self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
-    #     self.pos = 0
+    def decode_as_int32(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as a signed 32-bit int.
 
-    # def decode_into_map(self) -> Optional[defaultdict]:
-    #     """
-    #     A best-effort approach on linearly parsing the `mmkv_file` BufferedReader
-    #     and build up our `decoded_map`.
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the signed 32-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_signed_varint(BytesIO(value), mask=32)[0]
 
-    #     :return: our built-up `decoded_map` or None on error
-    #     """
+    def decode_as_int64(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as a signed 64-bit int.
 
-    #     # Loop and read key-value pairs into `decoded_map`
-    #     db_size = self.get_db_size()
-    #     if db_size == 0:
-    #         print('[+] MMKV datastore size is 0 - making db_size 256KB.')
-    #         db_size = 256000
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the signed 64-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_signed_varint(BytesIO(value), mask=64)[0]
 
-    #     while self.pos < db_size:
+    def decode_as_uint32(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as an unsigned 32-bit int.
 
-    #         # parse key
-    #         key_length, bytes_read = decode_unsigned_varint(self.mmkv_file, mask=32)
-    #         if (key_length, bytes_read) == (-1, -1):
-    #             print('[+] Ran out of bytes while decoding data into map - stopped parsing')
-    #             break
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the unsigned 32-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_unsigned_varint(BytesIO(value), mask=32)[0]
 
-    #         self.pos += bytes_read
+    def decode_as_uint64(self, value: Union[str, bytes]) -> int:
+        """
+        Decodes `value` as an unsigned 64-bit int.
 
-    #         try:
-    #             key_bytes = self.mmkv_file.read(key_length)
-    #             key = key_bytes.decode(encoding='utf-8')
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the unsigned 64-bit int result
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        return decode_unsigned_varint(BytesIO(value), mask=64)[0]
 
-    #         except UnicodeDecodeError:
-    #             print(f'[+] Error trying to UTF-8 decode {key_bytes} - returning decoded_map.')
-    #             return self.decoded_map
+    def decode_as_string(self, value: Union[str, bytes]) -> Optional[str]:
+        """
+        Attempts to decodes `value` as a UTF-8 string.
+        Note: This assumes that `value` has the "erroneous" varint length wrapper
 
-    #         if key == '' and key_length == 0:
-    #             break
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the UTF-8 decoded string, or None if not possible
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
 
-    #         # parse value
-    #         value_length, bytes_read = decode_unsigned_varint(self.mmkv_file, mask=32)
+        # Strip off the varint length delimiter bytes
+        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
 
-    #         if (value_length, bytes_read) == (-1, -1):
-    #             print('[+] Ran out of bytes while decoding data into map - stopped parsing')
-    #             break
+        try:
+            if wrapper_bytes_len >= len(value):
+                raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
+            value = value[wrapper_bytes_len:]
+            return value.decode('utf-8')
+        except:
+            print(f'[+] Could not UTF-8 decode {value!r}')
+            return None
 
-    #         # key-value pair was removed - value_length is 0
-    #         elif (value_length, bytes_read) == (0, 1):
-    #             print('[+] Value read was a null byte, therefore key-value pair was removed - no update and continuing')
-    #             self.pos += bytes_read
-    #             continue
+    def decode_as_bytes(self, value: Union[str, bytes]) -> bytes:
+        """
+        Decodes `value` as bytes.
+        Note: This assumes that `value` has the "erroneous" varint length wrapper
 
-    #         self.pos += bytes_read
-    #         value = self.mmkv_file.read(value_length)  # interpretable
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the bytes
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
 
-    #         # update map
-    #         self.decoded_map[key].append(value)
+        # Strip off the varint length delimiter bytes
+        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
+        value = value[wrapper_bytes_len:]
+        return value
 
-    #     return self.decoded_map
+    def decode_as_float(self, value: Union[str, bytes]) -> Optional[float]:
+        """
+        Decodes `value` as a double (8-bytes), which is a float type in Python.
 
-    # # Imitating the MMKV "get<Type>" API.
-    # # Assumes that the `value` bytes come directly from `decoded_map`
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the float result, or None on surely invalid `value`
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
 
-    # def decode_as_bool(self, value: bytes) -> Optional[bool]:
-    #     """
-    #     Attempts to decode `value` as a boolean.
+        if len(value) != 8:
+            print(f'[+] Could not float decode {value} due to length')
+            return None
 
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the boolean result if possible, or None if not
-    #     """
-    #     if value == b'\x01':
-    #         return True
-    #     elif value == b'\x00':
-    #         return False
-    #     else:
-    #         return None
-
-    # def decode_as_int32(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as a signed 32-bit int.
-
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the signed 32-bit int result
-    #     """
-    #     return decode_signed_varint(BytesIO(value), mask=32)[0]
-
-    # def decode_as_int64(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as a signed 64-bit int.
-
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the signed 64-bit int result
-    #     """
-    #     return decode_signed_varint(BytesIO(value), mask=64)[0]
-
-    # def decode_as_uint32(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as an unsigned 32-bit int.
-
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the unsigned 32-bit int result
-    #     """
-    #     return decode_unsigned_varint(BytesIO(value), mask=32)[0]
-
-    # def decode_as_uint64(self, value: bytes) -> int:
-    #     """
-    #     Decodes `value` as an unsigned 64-bit int.
-
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the unsigned 64-bit int result
-    #     """
-    #     return decode_unsigned_varint(BytesIO(value), mask=64)[0]
-
-    # def decode_as_string(self, value: bytes) -> Optional[str]:
-    #     """
-    #     Attempts to decodes `value` as a UTF-8 string.
-    #     Note: This assumes that `value` has the "erroneous" varint length wrapper
-
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the UTF-8 decoded string, or None if not possible
-    #     """
-    #     # Strip off the varint length delimiter bytes
-    #     wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
-
-    #     try:
-    #         if wrapper_bytes_len >= len(value):
-    #             raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
-    #         value = value[wrapper_bytes_len:]
-    #         return value.decode('utf-8')
-    #     except:
-    #         print(f'[+] Could not UTF-8 decode [{value}]')
-    #         return None
-
-    # def decode_as_bytes(self, value: bytes) -> bytes:
-    #     """
-    #     Decodes `value` as bytes.
-    #     Note: This assumes that `value` has the "erroneous" varint length wrapper
-
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the bytes
-    #     """
-    #     # Strip off the varint length delimiter bytes
-    #     wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
-    #     value = value[wrapper_bytes_len:]
-    #     return value
-
-    # def decode_as_float(self, value: bytes) -> float:
-    #     """
-    #     Decodes `value` as a double (8-bytes), which is a float type in Python.
-
-    #     :param value: protobuf-encoded bytes value
-    #     :return: Returns the float result
-    #     """
-    #     return struct.unpack('<d', value)[0]
+        return struct.unpack('<d', value)[0]
 
     # def reset(self) -> None:
     #     """
