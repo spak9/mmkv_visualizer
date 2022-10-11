@@ -2,7 +2,7 @@
 
 	import { hex } from './Util.mjs'
 	import MMKVCell from './MMKVCell.svelte'
-	export let mmkvMap		// Native JavaScript Map of "Map[str, Array[UInt8Array]]"
+	export let mmkvMap				// Native JavaScript Map of "Map[str, Array[UInt8Array]]"
 
 </script>
 
@@ -32,7 +32,7 @@
 <!-- Styles -->
 <style>
 	.table-wrapper {
-	  flex: 1 0 80%;
+	  flex: 1 1 80%;
 	  width:  100%;
 	  overflow: auto;
 	  padding: 16px; 
