@@ -33,7 +33,7 @@
 		// Reset prior MMKV values, if any
 		mmkvParser = undefined
 		mmkvMap = undefined
-		mmkvHexString = hex(await mmkvFile.arrayBuffer())
+		let mmkvHexString = hex(await mmkvFile.arrayBuffer())
 
 		let init = `mmkv_parser = MMKVParser("${mmkvHexString}")`
 		let code = `
@@ -92,10 +92,7 @@ mmkv_parser`
 	    <p>Drag & drop or select an MMKV file to visualize</p>
 	    <div class="main-buttons">
 	      <label for="mmkv-input">Open File</label>
-	      <input on:change={onChange} type="file" id="mmkv-input" hidden>
-	      <a href='/data_all_types'>
-	      	<button >Open Sample Data</button>
-	      </a>
+      	<button >Open Sample Data</button>
 	    </div>
 	  </div>
 	  {#if mmkvFileName}

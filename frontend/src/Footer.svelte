@@ -14,7 +14,6 @@
 	.page-footer{
 	  flex: 0 0 auto;
 	  display: flex;
-	  width: 60%;
 	  align-self: center;
 	  flex-direction: column;
 	}

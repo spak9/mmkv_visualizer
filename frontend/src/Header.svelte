@@ -26,7 +26,6 @@
   .page-header {
     /* Flex Container */
     display: flex;
-    width: 60%;
     align-self: center;
     justify-content: space-between;
     flex-direction: row;
