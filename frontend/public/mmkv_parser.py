@@ -387,17 +387,3 @@ class MMKVParser:
             return None
 
         return struct.unpack('<d', value)[0]
-
-    # def reset(self) -> None:
-    #     """
-    #     Resets the instance variables all back to original __init__ state
-
-    #     :return: None
-    #     """
-    #     self.mmkv_file: Optional[BufferedIOBase] = None
-    #     self.crc_file: Optional[BufferedIOBase] = None
-    #     self.file_size: Optional[int] = None
-    #     self.header_bytes: Optional[bytes] = None  # Should be 8 bytes after initialization
-    #     self.decoded_map: defaultdict[str, List[bytes]] = defaultdict(list)
-    #     self.pos = 0
-    #     return None

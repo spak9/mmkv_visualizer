@@ -7,6 +7,7 @@
 	let active = false				// A bool for whether ".page_main" should be highlighted
 	let pyodide
 	let mmkvMap
+	let mmkvFileName					// A string filename of the file user passes in
 	let mmkvParser
 	let mmkvParserPythonCode
 
@@ -32,8 +33,8 @@
 		// Reset prior MMKV values, if any
 		mmkvParser = undefined
 		mmkvMap = undefined
+		mmkvHexString = hex(await mmkvFile.arrayBuffer())
 
-		let mmkvHexString = hex(await mmkvFile.arrayBuffer())
 		let init = `mmkv_parser = MMKVParser("${mmkvHexString}")`
 		let code = `
 ${mmkvParserPythonCode}
@@ -43,6 +44,7 @@ mmkv_parser`
 		mmkvParser = pyodide.runPython(code)
 		mmkvParserStore.set(mmkvParser)
 		mmkvMap = mmkvParser.decode_into_map().toJs()
+		mmkvFileName = mmkvFile.name
 		console.log(mmkvMap)
 	}
 
@@ -62,10 +64,16 @@ mmkv_parser`
 	}
 
 	async function onChange(e) {
-		if(e.target.files) {
+		if (e.target.files) {
 			let mmkvFile = e.target.files[0]
 			await loadFileIntoMMKVParser(mmkvFile)
 		}
+	}
+
+	async function onClickSampleData(e) {
+		// let mmkvFile = await (await fetch('/data_all_types')).arrayBuffer()
+		// await loadFileIntoMMKVParser(mmkf)
+		window.location.assign('/data_all_types')
 	}
 
 </script>
@@ -85,9 +93,14 @@ mmkv_parser`
 	    <div class="main-buttons">
 	      <label for="mmkv-input">Open File</label>
 	      <input on:change={onChange} type="file" id="mmkv-input" hidden>
-	      <button>Open Sample Data</button>
+	      <a href='/data_all_types'>
+	      	<button >Open Sample Data</button>
+	      </a>
 	    </div>
 	  </div>
+	  {#if mmkvFileName}
+	  	<h4>Parsing "{mmkvFileName}"</h4>
+	  {/if}
 	  <MMKVTable mmkvMap={mmkvMap}/>
 	{/await}
 </div>
