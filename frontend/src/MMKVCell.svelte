@@ -4,9 +4,8 @@
   import { get } from 'svelte/store'
 
 	export let hexstring 		// Hex string representing the ray 
-	let dataTypeIndex	= 0		// data type index for rotating on click 
 
-	const dataTypes = [
+  const dataTypes = [
     'hexstring-type', 
     'string-type', 
     'int32-type', 
@@ -18,8 +17,14 @@
     'bool-type'
     ]
 
+	let dataTypeIndex	= 0		// data type index for rotating on click 
+  let dataType = dataTypes[dataTypeIndex]
+  $: dataType = dataTypes[dataTypeIndex % dataTypes.length]
+
   function interpretHexData(index) {
     let mmkvParser = get(mmkvParserStore)
+    // dataType = dataTypes[index % dataTypes.length]
+    console.log(dataType)
     if (index % dataTypes.length == 0) {
       return hexstring
     }
@@ -53,10 +58,18 @@
 
 
 <!-- HTML -->
-<td on:click={() => dataTypeIndex += 1}>{interpretHexData(dataTypeIndex)}</td>
+<td class={dataType} on:click={() => dataTypeIndex += 1}>{interpretHexData(dataTypeIndex)}</td>
 
 
 <!-- Styles -->
 <style>
-
+  .hexstring-type {}
+  .string-type {background-color: #a2faa3;}
+  .int32-type {background-color: #92C9B1;}
+  .uint32-type {background-color: #F5B700;}
+  .int64-type {background-color: #A599B5;}
+  .uint64-type {background-color: #ce96a6;}
+  .bytes-type {background-color: #D7FDF0;}
+  .float-type {background-color: #B2FFD6;}
+  .bool-type {background-color: #CC5803;}
 </style>

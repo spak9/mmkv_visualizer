@@ -11,14 +11,6 @@
 	let mmkvParser
 	let mmkvParserPythonCode
 
-	// Prepare functionality for converting [ArrayBuffer] to hex string
-	const byteToHex = [];
-	for (let n = 0; n <= 0xff; ++n)
-	{
-	    const hexOctet = n.toString(16).padStart(2, "0");
-	    byteToHex.push(hexOctet);
-	}
-
 	/* Functions */
 
 	// Called when initialization of the component - will load in and set up the
@@ -91,6 +83,7 @@ mmkv_parser`
 	  <div class="instructions">
 	    <p>Drag & drop or select an MMKV file to visualize</p>
 	    <div class="main-buttons">
+	    	<input on:change={onChange} type="file" id="mmkv-input" hidden>
 	      <label for="mmkv-input">Open File</label>
       	<button >Open Sample Data</button>
 	    </div>
@@ -114,11 +107,11 @@ mmkv_parser`
 	  border-style: dashed;
 	  border-width: 2px;
 	  border-radius: 16px;
-	  height: 80%;            /* Used to make sure table doesn't make div taller */
+	  height: 70%;            /* Used to make sure table doesn't make div taller */
 	  margin: 16px;
 
 	  /* Flex Items */
-	  flex: 0 0 80%;
+	  flex: 0 0 70%;
 	}
 
 	.page-main.highlight {
