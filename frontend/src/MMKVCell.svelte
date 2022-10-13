@@ -72,4 +72,8 @@
   .bytes-type {background-color: #D7FDF0;}
   .float-type {background-color: #B2FFD6;}
   .bool-type {background-color: #CC5803;}
+  td {
+    word-break: break-all;
+    width: 80px;
+  }
 </style>

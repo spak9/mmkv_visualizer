@@ -81,16 +81,17 @@ mmkv_parser`
 		<h3>Loading MMKV Parser...</h3>
 	{:then}
 	  <div class="instructions">
-	    <p>Drag & drop or select an MMKV file to visualize</p>
+	  	{#if mmkvFileName}
+	  		<p>Parsing "{mmkvFileName}" File</p>
+	  	{:else} 
+	  		<p>Drag & drop or select an MMKV file to visualize</p>
+	    {/if}
 	    <div class="main-buttons">
 	    	<input on:change={onChange} type="file" id="mmkv-input" hidden>
 	      <label for="mmkv-input">Open File</label>
       	<button >Open Sample Data</button>
 	    </div>
 	  </div>
-	  {#if mmkvFileName}
-	  	<h4>Parsing "{mmkvFileName}"</h4>
-	  {/if}
 	  <MMKVTable mmkvMap={mmkvMap}/>
 	{/await}
 </div>

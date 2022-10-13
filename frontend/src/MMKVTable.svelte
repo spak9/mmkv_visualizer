@@ -12,8 +12,8 @@
 	<div class="table-wrapper">
 		<table>
 			<tr>
-				<th>Keys</th>
-				<th colspan="100%">Values</th>
+				<th id="keys-header">Keys</th>
+				<th id="values-header" colspan="100%">Values</th>
 			</tr>
 
 			{#each [...mmkvMap] as [stringKey, arrayValue]}
@@ -36,5 +36,11 @@
 	  width:  100%;
 	  overflow: auto;
 	  padding: 16px; 
+	}
+	#keys-header {
+		width: 20%;
+	}
+	#values-header {
+		width: 80%;
 	}
 </style>
