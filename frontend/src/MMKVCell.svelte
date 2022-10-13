@@ -58,7 +58,7 @@
 
 
 <!-- HTML -->
-<td class={dataType} on:click={() => dataTypeIndex += 1}>{interpretHexData(dataTypeIndex)}</td>
+<td class={dataType} on:click={() => dataTypeIndex += 1}>{interpretHexData(dataTypeIndex)} ({dataType.split('-')[0]})</td>
 
 
 <!-- Styles -->
@@ -73,7 +73,6 @@
   .float-type {background-color: #B2FFD6;}
   .bool-type {background-color: #CC5803;}
   td {
-    word-break: break-all;
-    width: 80px;
+    min-width: 80px;
   }
 </style>

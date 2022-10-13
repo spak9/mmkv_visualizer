@@ -89,7 +89,7 @@ mmkv_parser`
 	    <div class="main-buttons">
 	    	<input on:change={onChange} type="file" id="mmkv-input" hidden>
 	      <label for="mmkv-input">Open File</label>
-      	<button >Open Sample Data</button>
+    		<button><a href='/data_all_types' download>Download Sample Data</a></button>
 	    </div>
 	  </div>
 	  <MMKVTable mmkvMap={mmkvMap}/>
@@ -99,6 +99,10 @@ mmkv_parser`
 
 <!-- Styles -->
 <style>
+	a {
+		all:  unset;
+	}
+
 	.page-main {
 	  /* Flex Container */
 	  display: flex;
