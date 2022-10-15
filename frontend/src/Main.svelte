@@ -1,38 +1,65 @@
 <script>
 
+	/**
+	 * Imports
+	 */
 	import { mmkvParserStore } from './MMKVParserStore.mjs'
-	import MMKVTable from "./MMKVTable.svelte"
 	import { hex } from './Util.mjs'
+	import MMKVTable from "./MMKVTable.svelte"
 
-	let active = false				// A bool for whether ".page_main" should be highlighted
+	/**
+	 * State
+	 */
+
+ 	// A bool for whether ".page_main" should be highlighted
+	let active = false				
+
+	// The Pyodide Interface for running python code - singleton
 	let pyodide
+
+	// A native JavaScript "Map[string, Array[UInt8Array]]" map that will hold
+	// the result of decoding the MMKV File via `mmkv_parser.py`
 	let mmkvMap
-	let mmkvFileName					// A string filename of the file user passes in
+
+	// A string filename of the file user passes in
+	let mmkvFileName
+
+	// The `MMKVParser` python instance; coupled with data and allows "decode" API					
 	let mmkvParser
+
+	// Long string of text representing our `mmkv_parser.py` python code
 	let mmkvParserPythonCode
 
-	/* Functions */
+	/**
+	 *  Functions 
+	 */
 
-	// Called when initialization of the component - will load in and set up the
-	// global "pyodide" object and prepares the `mmkv_parser.py` code via text.
-	// We prepare the code prior because the __init__ requires data. 
+	// Called during initialization of the component - will load in and set up the
+	// global `pyodide` object and prepares the `mmkv_parser.py` code via text.
+	// We prepare the code prior because the python __init__ requires data. 
 	async function setupPyodideAndCode () {
 		pyodide = await loadPyodide()
 		mmkvParserPythonCode = await (await fetch("/mmkv_parser.py")).text()
+		console.log('[+] Pyodide and mmkv_parser.py all fetched')
 	}
 
+	// Called when user D&Ds or chooses a file to parse. Will parse the file
+	// and update a lot of component state
 	async function loadFileIntoMMKVParser(mmkvFile) {
+
 		// Reset prior MMKV values, if any
 		mmkvParser = undefined
 		mmkvMap = undefined
-		let mmkvHexString = hex(await mmkvFile.arrayBuffer())
 
+		// Convert File data into a hex string, preparing the `mmkvParser` decoding 
+		let mmkvHexString = hex(await mmkvFile.arrayBuffer())
 		let init = `mmkv_parser = MMKVParser("${mmkvHexString}")`
 		let code = `
 ${mmkvParserPythonCode}
 ${init}
 mmkv_parser`
 
+		// Run our prepared python code w/ hex data - update various pieces of state
 		mmkvParser = pyodide.runPython(code)
 		mmkvParserStore.set(mmkvParser)
 		mmkvMap = mmkvParser.decode_into_map().toJs()
@@ -40,7 +67,6 @@ mmkv_parser`
 		console.log(mmkvMap)
 	}
 
-	// Callback when the user drops a file 
 	async function onDrop(e) {
 		e.preventDefault()
 		if (e.dataTransfer.files) {
@@ -61,13 +87,6 @@ mmkv_parser`
 			await loadFileIntoMMKVParser(mmkvFile)
 		}
 	}
-
-	async function onClickSampleData(e) {
-		// let mmkvFile = await (await fetch('/data_all_types')).arrayBuffer()
-		// await loadFileIntoMMKVParser(mmkf)
-		window.location.assign('/data_all_types')
-	}
-
 </script>
 
 
@@ -99,7 +118,7 @@ mmkv_parser`
 
 <!-- Styles -->
 <style>
-	a {
+	button > a {
 		all:  unset;
 	}
 

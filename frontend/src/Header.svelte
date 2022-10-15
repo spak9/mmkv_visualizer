@@ -22,40 +22,31 @@
 
 <!-- Styles -->
 <style>
-
   .page-header {
     /* Flex Container */
     display: flex;
     align-self: center;
     justify-content: space-between;
     flex-direction: row;
-
-    /* Flex Items */
-    flex: 0 0 auto;
+    align-items: center;
   }
   .page-header > * {
-      padding: 16px;
-  }
-  .nav-intro {
-      flex: 0 1 75%;
+    padding: 16px;
   }
   .nav-links {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      flex: 1 0 25%;
-      margin-left: auto;
-      justify-content: flex-end;
+    display: flex;
+    flex: 1 0 25%;
+    justify-content: flex-end;
   }
   .github-link{
-      width: 32px;
-      height: 28px;
-      fill: black;
-      transition: fill .3s;
+    width: 32px;
+    height: 28px;
+    fill: black;
+    transition: fill .3s;
   }
   .github-link:hover {
-      background:none;
-      fill:#6e5494;
+    background:none;
+    fill:#6e5494;
   }
 
 </style>
