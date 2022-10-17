@@ -55,10 +55,12 @@
   }
 
   function copyContent(e) {
+    e.stopPropagation()
     console.log("[+] Copy Content")
   }
 
   function expandContent(e) {
+    e.stopPropagation()
     console.log('[+] Expand Content')
   }
 </script>
@@ -66,20 +68,31 @@
 
 <!-- HTML -->
 <td class={dataType} on:click={() => dataTypeIndex += 1}>
+  <span class="data-type">({dataType.split('-')[0]})</span>
+  <span class="data">{interpretHexData(dataTypeIndex)}</span>
   <span class="material-icons md-18" on:click={expandContent}>expand</span>
   <span class="material-icons md-18" on:click={copyContent}>content_copy</span>
-  <span>{interpretHexData(dataTypeIndex)} ({dataType.split('-')[0]})</span></td>
+</td>
 
 
 <!-- Styles -->
 <style>
   .md-18 {
-    padding: 4px;
-    font-size: 18px;
+    padding: 2px;
+    font-size: .8rem;
     vertical-align: middle;
     border: 1px solid black;
     border-radius: 5px;
   }
+  .data {
+    display: inline-block;
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+  .data-type {color: rgba(0, 0, 0, 0.5);}
   .hexstring-type {}
   .string-type {background-color: #a2faa3;}
   .int32-type {background-color: #92C9B1;}
@@ -90,6 +103,6 @@
   .float-type {background-color: #B2FFD6;}
   .bool-type {background-color: #CC5803;}
   td {
-    min-width: 80px;
+    white-space: nowrap;
   }
 </style>
