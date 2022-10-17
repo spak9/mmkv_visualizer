@@ -54,15 +54,32 @@
     }
   }
 
+  function copyContent(e) {
+    console.log("[+] Copy Content")
+  }
+
+  function expandContent(e) {
+    console.log('[+] Expand Content')
+  }
 </script>
 
 
 <!-- HTML -->
-<td class={dataType} on:click={() => dataTypeIndex += 1}>{interpretHexData(dataTypeIndex)} ({dataType.split('-')[0]})</td>
+<td class={dataType} on:click={() => dataTypeIndex += 1}>
+  <span class="material-icons md-18" on:click={expandContent}>expand</span>
+  <span class="material-icons md-18" on:click={copyContent}>content_copy</span>
+  <span>{interpretHexData(dataTypeIndex)} ({dataType.split('-')[0]})</span></td>
 
 
 <!-- Styles -->
 <style>
+  .md-18 {
+    padding: 4px;
+    font-size: 18px;
+    vertical-align: middle;
+    border: 1px solid black;
+    border-radius: 5px;
+  }
   .hexstring-type {}
   .string-type {background-color: #a2faa3;}
   .int32-type {background-color: #92C9B1;}
