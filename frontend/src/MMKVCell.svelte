@@ -54,9 +54,17 @@
     }
   }
 
-  function copyContent(e) {
+  async function copyContent(e) {
     e.stopPropagation()
     console.log("[+] Copy Content")
+    let data = interpretHexData(dataTypeIndex)
+    navigator.clipboard.writeText(data).then(
+      () => {
+        console.log('[+] Copied data')
+      },
+      () => {
+        console.log('[+] Copy failed')
+      })
   }
 
   function expandContent(e) {
@@ -79,10 +87,11 @@
 <style>
   .md-18 {
     padding: 2px;
+    margin-left: 2px;
     font-size: .8rem;
-    vertical-align: middle;
     border: 1px solid black;
     border-radius: 5px;
+    vertical-align: middle;
   }
   .data {
     display: inline-block;
