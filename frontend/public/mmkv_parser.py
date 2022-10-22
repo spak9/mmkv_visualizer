@@ -218,6 +218,11 @@ class MMKVParser:
         # Get size of database
         db_size = self.get_db_size()
 
+        # Check db_size - max out if needed
+        if db_size == 0:
+            print('[+] DB Size is 0! Best-effort approach as a 4GB file')
+            db_size = 2 ** 32
+
         # Iterate through the database and build-up our dictionary
         while self.pos < db_size:
 
