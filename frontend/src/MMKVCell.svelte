@@ -1,5 +1,6 @@
 <script>
 
+  import MMKVCellModal from './MMKVCellModal.svelte'
   import { mmkvParserStore } from './MMKVParserStore.mjs'
   import { get } from 'svelte/store'
 
@@ -17,6 +18,7 @@
     'bool-type'
     ]
 
+  let hidden = true
 	let dataTypeIndex	= 0		// data type index for rotating on click 
   let dataType = dataTypes[dataTypeIndex]
   $: dataType = dataTypes[dataTypeIndex % dataTypes.length]
@@ -70,6 +72,7 @@
   function expandContent(e) {
     e.stopPropagation()
     console.log('[+] Expand Content')
+    hidden = false
   }
 </script>
 
@@ -81,6 +84,8 @@
   <span class="material-icons md-18" on:click={expandContent}>expand</span>
   <span class="material-icons md-18" on:click={copyContent}>content_copy</span>
 </td>
+
+<MMKVCellModal bind:hidden={hidden}/>
 
 
 <!-- Styles -->
