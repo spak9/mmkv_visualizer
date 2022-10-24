@@ -1,11 +1,15 @@
 <script>
 	export let hidden = true
+	export let data
+	export let dataType
 </script>
 
 
 <!-- HTML -->
 <div class="modal" class:hidden={hidden}>
-	<h2>Heyo</h2>
+	<span class="data-type">{dataType}</span>
+	<hr>
+	<span>{data}</span>
 </div>
 
 <div class="overlay" class:hidden={hidden} on:click={() => hidden = true}>
@@ -16,8 +20,9 @@
 <!-- Styling -->
 <style>
 	.modal {
+		padding: 16px;
 		width: 60vw;
-		height: 60vh;
+		height: 70vh;
 		background-color: white;
   	border: 1px solid #ddd;
   	border-radius: 15px;
@@ -25,6 +30,7 @@
   	top: 20%;
   	right: 20%;
   	z-index: 2;
+  	overflow-y: auto;
 	}
 	.overlay {
 	  position: fixed;
@@ -41,4 +47,5 @@
 	.hidden {
 		display: none;
 	}
+	.data-type {color: rgba(0, 0, 0, 0.5);}
 </style>

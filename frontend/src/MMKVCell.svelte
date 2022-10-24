@@ -85,7 +85,10 @@
   <span class="material-icons md-18" on:click={copyContent}>content_copy</span>
 </td>
 
-<MMKVCellModal bind:hidden={hidden}/>
+<MMKVCellModal 
+  bind:hidden={hidden} 
+  data={interpretHexData(dataTypeIndex)} 
+  dataType={dataType.split('-')[0]}/>
 
 
 <!-- Styles -->
