@@ -4,7 +4,7 @@
   import { mmkvParserStore } from './MMKVParserStore.mjs'
   import { get } from 'svelte/store'
 
-	export let hexstring 		// Hex string representing the ray 
+	export let hexstring 		// Hex string representing the data 
 
   const dataTypes = [
     'hexstring-type', 
@@ -18,8 +18,8 @@
     'bool-type'
     ]
 
-  let hidden = true
-	let dataTypeIndex	= 0		// data type index for rotating on click 
+  let expand_hidden = true  // bool for expanding the MMKVCellModal
+	let dataTypeIndex	= 0		  // data type index for rotating on click 
   let dataType = dataTypes[dataTypeIndex]
   $: dataType = dataTypes[dataTypeIndex % dataTypes.length]
 
@@ -72,7 +72,7 @@
   function expandContent(e) {
     e.stopPropagation()
     console.log('[+] Expand Content')
-    hidden = false
+    expand_hidden = false
   }
 </script>
 
@@ -86,21 +86,13 @@
 </td>
 
 <MMKVCellModal 
-  bind:hidden={hidden} 
+  bind:hidden={expand_hidden} 
   data={interpretHexData(dataTypeIndex)} 
   dataType={dataType.split('-')[0]}/>
 
 
 <!-- Styles -->
 <style>
-  .md-18 {
-    padding: 2px;
-    margin-left: 2px;
-    font-size: .8rem;
-    border: 1px solid black;
-    border-radius: 5px;
-    vertical-align: middle;
-  }
   .data {
     display: inline-block;
     max-width: 400px;

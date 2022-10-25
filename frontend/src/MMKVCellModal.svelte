@@ -1,13 +1,27 @@
 <script>
+
 	export let hidden = true
 	export let data
 	export let dataType
+
+	async function copyContent(e) {
+    e.stopPropagation()
+    console.log("[+] Copy Content")
+    navigator.clipboard.writeText(data).then(
+      () => {
+        console.log('[+] Copied data')
+      },
+      () => {
+        console.log('[+] Copy failed')
+      })
+  }
 </script>
 
 
 <!-- HTML -->
 <div class="modal" class:hidden={hidden}>
 	<span class="data-type">{dataType}</span>
+	<span class="material-icons md-18" on:click={copyContent}>content_copy</span>
 	<hr>
 	<span>{data}</span>
 </div>

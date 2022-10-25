@@ -18,6 +18,21 @@ html, body {
   margin: 8px;
   font-size: 1.25em;
 }
+.md-18 {
+  padding: 2px;
+  margin-left: 2px;
+  font-size: .8rem;
+  border: 1px solid black;
+  border-radius: 5px;
+  vertical-align: middle;
+  transition: all 500ms ease;
+  cursor: pointer; 
+}
+.md-18:hover {
+  color: #ccc;
+  border: #ccc solid 1px;
+  background:#fff;
+}
 
 
 table {
