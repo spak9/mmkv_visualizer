@@ -143,6 +143,7 @@ mmkv_parser`
 	}
 
 	.instructions {
+		text-align: center;
 	  flex: 0 0 auto;
 	  margin: 16px;   
 	}

@@ -1,9 +1,10 @@
 <script>
 
+  import MMKVCellModal from './MMKVCellModal.svelte'
   import { mmkvParserStore } from './MMKVParserStore.mjs'
   import { get } from 'svelte/store'
 
-	export let hexstring 		// Hex string representing the ray 
+	export let hexstring 		// Hex string representing the data 
 
   const dataTypes = [
     'hexstring-type', 
@@ -17,7 +18,8 @@
     'bool-type'
     ]
 
-	let dataTypeIndex	= 0		// data type index for rotating on click 
+  let expand_hidden = true  // bool for expanding the MMKVCellModal
+	let dataTypeIndex	= 0		  // data type index for rotating on click 
   let dataType = dataTypes[dataTypeIndex]
   $: dataType = dataTypes[dataTypeIndex % dataTypes.length]
 
@@ -54,15 +56,52 @@
     }
   }
 
+  async function copyContent(e) {
+    e.stopPropagation()
+    console.log("[+] Copy Content")
+    let data = interpretHexData(dataTypeIndex)
+    navigator.clipboard.writeText(data).then(
+      () => {
+        console.log('[+] Copied data')
+      },
+      () => {
+        console.log('[+] Copy failed')
+      })
+  }
+
+  function expandContent(e) {
+    e.stopPropagation()
+    console.log('[+] Expand Content')
+    expand_hidden = false
+  }
 </script>
 
 
 <!-- HTML -->
-<td class={dataType} on:click={() => dataTypeIndex += 1}>{interpretHexData(dataTypeIndex)} ({dataType.split('-')[0]})</td>
+<td class={dataType} on:click={() => dataTypeIndex += 1}>
+  <span class="data-type">({dataType.split('-')[0]})</span>
+  <span class="data">{interpretHexData(dataTypeIndex)}</span>
+  <span class="material-icons md-18" on:click={expandContent}>expand</span>
+  <span class="material-icons md-18" on:click={copyContent}>content_copy</span>
+</td>
+
+<MMKVCellModal 
+  bind:hidden={expand_hidden} 
+  data={interpretHexData(dataTypeIndex)} 
+  dataType={dataType.split('-')[0]}/>
 
 
 <!-- Styles -->
 <style>
+  .data {
+    display: inline-block;
+    max-width: 400px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+  .data-type {color: rgba(0, 0, 0, 0.5);}
   .hexstring-type {}
   .string-type {background-color: #a2faa3;}
   .int32-type {background-color: #92C9B1;}
@@ -73,6 +112,6 @@
   .float-type {background-color: #B2FFD6;}
   .bool-type {background-color: #CC5803;}
   td {
-    min-width: 80px;
+    white-space: nowrap;
   }
 </style>
