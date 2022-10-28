@@ -29,3 +29,8 @@ The main advantage of using this parsing code over the official python wrapper i
 does not allow you to see older data, while this parser can. This may be important for the inclined forensicator. 
 
 You can also find a set of python tests found at `tests`.
+
+## Roadmap
+
+- Expose more metadata, such as whether database size was found, or if it's a best effort approach
+- Enable decryption with user input of encryption key
