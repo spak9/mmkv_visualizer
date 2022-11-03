@@ -276,24 +276,6 @@ class MMKVParser:
 
         return self.decoded_map
 
-
-    def decode_as_bool(self, value: Union[str, bytes]) -> Optional[bool]:
-        """
-        Attempts to decode `value` as a boolean.
-
-        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
-        :return: Returns the boolean result if possible, or None if not
-        """
-        if isinstance(value, str):
-            value = bytes.fromhex(value)
-        if value == b'\x01':
-            return True
-        elif value == b'\x00':
-            return False
-        else:
-            print(f'[+] Could not bool decode {value!r}')
-            return None
-
     def decode_as_int32(self, value: Union[str, bytes]) -> int:
         """
         Decodes `value` as a signed 32-bit int.
@@ -350,32 +332,39 @@ class MMKVParser:
             value = bytes.fromhex(value)
 
         # Strip off the varint length delimiter bytes
-        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
+        varint, varint_len = decode_unsigned_varint(BytesIO(value), mask=32)
 
         try:
-            if wrapper_bytes_len >= len(value):
+            if varint_len >= len(value):
                 raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
-            value = value[wrapper_bytes_len:]
+            value = value[varint_len:varint + varint_len]
             return value.decode('utf-8')
         except:
             print(f'[+] Could not UTF-8 decode {value!r}')
             return None
 
-    def decode_as_bytes(self, value: Union[str, bytes]) -> bytes:
+    def decode_as_bytes(self, value: Union[str, bytes]) -> Optional[bytes]:
         """
         Decodes `value` as bytes.
         Note: This assumes that `value` has the "erroneous" varint length wrapper
 
         :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
-        :return: Returns the bytes
+        :return: Returns the bytes, or None if not possible
         """
         if isinstance(value, str):
             value = bytes.fromhex(value)
 
         # Strip off the varint length delimiter bytes
-        wrapper_bytes, wrapper_bytes_len = decode_unsigned_varint(BytesIO(value), mask=32)
-        value = value[wrapper_bytes_len:]
-        return value
+        varint, varint_len = decode_unsigned_varint(BytesIO(value), mask=32)
+
+        try:
+            if varint_len >= len(value):
+                raise ValueError('[+] Wrapper bytes length when decoding bytes is longer than `value`.')
+            value = value[varint_len:varint + varint_len]
+            return value
+        except:
+            print(f'[+] Could not decode bytes')
+            return None
 
     def decode_as_float(self, value: Union[str, bytes]) -> Optional[float]:
         """
@@ -392,3 +381,20 @@ class MMKVParser:
             return None
 
         return struct.unpack('<d', value)[0]
+
+    def decode_as_bool(self, value: Union[str, bytes]) -> Optional[bool]:
+        """
+        Attempts to decode `value` as a boolean.
+
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the boolean result if possible, or None if not
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+        if value == b'\x01':
+            return True
+        elif value == b'\x00':
+            return False
+        else:
+            print(f'[+] Could not bool decode {value!r}')
+            return None
