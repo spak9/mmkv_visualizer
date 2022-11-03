@@ -32,5 +32,5 @@ You can also find a set of python tests found at `tests`.
 
 ## Roadmap
 
-- Expose more metadata, such as whether database size was found, or if it's a best effort approach
-- Enable decryption with user input of encryption key
+- [ ] Expose more metadata: whether database size was found, or if it's a best effort approach, file is empty, file is probablistically encrypted.
+- [ ] Enable decryption with user input of encryption key
