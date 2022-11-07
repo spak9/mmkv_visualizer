@@ -167,6 +167,18 @@ def create_string_keypair_with_remove():
     kv.set('value_4', 'key')
 
 
+def create_string_keypair_with_encrypt():
+    # Check if test data exist, if so, delete, so we don't append
+    test_data_file = Path('create_string_keypair_with_encrypt')
+    if test_data_file.exists():
+        test_data_file.unlink()
+    test_data_file = Path('create_string_keypair_with_encrypt.crc')
+    if test_data_file.exists():
+        test_data_file.unlink()
+
+    kv = mmkv.MMKV('create_string_keypair_with_encrypt', mmkv.MMKVMode.SingleProcess, "key")
+    kv.set('steven', 'name')
+
 if __name__ == "__main__":
 
 
@@ -188,4 +200,6 @@ if __name__ == "__main__":
     create_string_keypair_with_updates()
 
     create_float_keypair_with_updates()
+
+    create_string_keypair_with_encrypt()
 
