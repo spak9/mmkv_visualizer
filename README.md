@@ -33,4 +33,5 @@ You can also find a set of python tests found at `tests`.
 ## Roadmap
 
 - [ ] Expose more metadata: whether database size was found, or if it's a best effort approach, file is empty, file is probablistically encrypted.
-- [ ] Enable decryption with user input of encryption key
+- [ ] Experiment with new UI design and see if Svelte Material is a viable solution.
+- [ ] Enable decryption with user input of encryption key.
