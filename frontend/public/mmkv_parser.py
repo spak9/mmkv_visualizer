@@ -173,6 +173,16 @@ class MMKVParser:
         self.pos: int = 0
         self.decoded_map: DefaultDict[str, List[bytes]] = defaultdict(list)
 
+        # IV from .crc file if it exists
+        if self.crc_file:
+            crc_header_bytes = self.crc.read(28)
+            if len(crc_header_bytes) != 28:
+                raise ValueError('[+] Error while reading crc_file. Header bytes was not 28 bytes.')
+            self.iv = crc_header_bytes[12:28]
+        else:
+            print('[+] .CRC file was not passed in - is needed for decryption routines')
+            self.iv = b''
+
         # Read in first 4 header bytes - [0:4] is total size
         self.header_bytes: bytes = self.mmkv_file.read(4)
         if len(self.header_bytes) != 4:
@@ -207,6 +217,13 @@ class MMKVParser:
             raise TypeError(f'[+] Error while unpacking header bytes. Received {type(size)}')
 
 
+    def decrypt_and_reconstruct(self) -> 
+
+
+
+    '''
+        Decoding Procedures
+    '''
     def decode_into_map(self) -> DefaultDict[str, List[bytes]]:
         """
         A best-effort approach on linearly parsing the `mmkv_file` stream and building up 
@@ -377,7 +394,7 @@ class MMKVParser:
             value = bytes.fromhex(value)
 
         if len(value) != 8:
-            print(f'[+] Could not float decode {value} due to length')
+            print(f'[+] Could not float decode {value!r} due to length')
             return None
 
         return struct.unpack('<d', value)[0]

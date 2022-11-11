@@ -30,6 +30,9 @@
 	// Long string of text representing our `mmkv_parser.py` python code
 	let mmkvParserPythonCode
 
+	// Bool representing whether the MMKV database is "empty"; all zero bytes
+	let isEmptyDb = null
+
 	/**
 	 *  Functions 
 	 */
