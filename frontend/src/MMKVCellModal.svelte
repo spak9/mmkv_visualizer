@@ -1,15 +1,15 @@
 <script>
 
 	export let hidden = true
-	export let data
-	export let dataType
+	export let content
+	export let subject
 
 	async function copyContent(e) {
     e.stopPropagation()
     console.log("[+] Copy Content")
-    navigator.clipboard.writeText(data).then(
+    navigator.clipboard.writeText(content).then(
       () => {
-        console.log('[+] Copied data')
+        console.log('[+] Copied content')
       },
       () => {
         console.log('[+] Copy failed')
@@ -20,10 +20,10 @@
 
 <!-- HTML -->
 <div class="modal" class:hidden={hidden}>
-	<span class="data-type">{dataType}</span>
+	<span class="subject">{subject}</span>
 	<span class="material-icons md-18" on:click={copyContent}>content_copy</span>
 	<hr>
-	<span>{data}</span>
+	<span>{content}</span>
 </div>
 
 <div class="overlay" class:hidden={hidden} on:click={() => hidden = true}>
@@ -61,5 +61,5 @@
 	.hidden {
 		display: none;
 	}
-	.data-type {color: rgba(0, 0, 0, 0.5);}
+	.subject {color: rgba(0, 0, 0, 0.5);}
 </style>

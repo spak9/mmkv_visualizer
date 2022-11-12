@@ -6,6 +6,7 @@
 	import { mmkvParserStore } from './MMKVParserStore.mjs'
 	import { hex } from './Util.mjs'
 	import MMKVTable from "./MMKVTable.svelte"
+	import MMKVCellModal from "./MMKVCellModal.svelte"
 
 	/**
 	 * State
@@ -21,17 +22,25 @@
 	// the result of decoding the MMKV File via `mmkv_parser.py`
 	let mmkvMap
 
-	// A string filename of the file user passes in
+	// A string filename of the mmkv file user passes in
 	let mmkvFileName
 
-	// The `MMKVParser` python instance; coupled with data and allows "decode" API					
+	// A string filename of the crc file user passes in
+	let crcFileName
+
+	// The `MMKVParser` python instance; coupled with data and allows "decode" API
 	let mmkvParser
 
 	// Long string of text representing our `mmkv_parser.py` python code
 	let mmkvParserPythonCode
 
-	// Bool representing whether the MMKV database is "empty"; all zero bytes
-	let isEmptyDb = null
+	// Boolean for the MMKVCellModal
+	let modalHidden = true
+
+	// A string error/warning message that will presented on the MMKVCellModal
+	let errorMessage = ''
+
+
 
 	/**
 	 *  Functions 
@@ -65,16 +74,86 @@ mmkv_parser`
 		// Run our prepared python code w/ hex data - update various pieces of state
 		mmkvParser = pyodide.runPython(code)
 		mmkvParserStore.set(mmkvParser)
+
 		mmkvMap = mmkvParser.decode_into_map().toJs()
 		mmkvFileName = mmkvFile.name
 		console.log(mmkvMap)
 	}
 
+
+	// Validates and updates state on the mmkv and optional CRC files passed in
+	// by the user. 
+	// Checks whether files were passed in, is "empty"
+	// Returns a tuple of [mmkvFile, crcFile].
+	async function inputValidation(dataTransfer) {
+
+		let mmkvFile = null
+		let crcFile = null
+		errorMessage = ''
+
+		// Check number of files passed in
+		if (!dataTransfer.files) {
+			console.log("[+] User did not input any files")
+		}
+		else if (dataTransfer.files.length > 2) {
+			console.log(`[+] User inputted ${dataTransfer.files.length} files`)
+		}
+		else if (dataTransfer.files.length == 1) {
+			// MMKV File
+			console.log('[+] User passed in 1 file')
+			mmkvFile = dataTransfer.files[0]
+			let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer), 16)
+			console.log(isEmpty)
+			if (isEmpty == 0 || isNaN(isEmpty)) {
+				errorMessage += `${mmkvFile.name} is an empty database.`
+				mmkvFile = null
+			}
+		}
+		else if (dataTransfer.files.length == 2) {
+			console.log('[+] User passed in 2 files')
+			for (let file of dataTransfer.files) {
+				console.log(file)
+				if (file.name.endsWith(".crc")) {
+					console.log("[+] Found crc file")
+					crcFile = file
+				}
+				else {
+					mmkvFile = file
+					let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer), 16)
+					if (isEmpty == 0) {
+						errorMesage += `${mmkvFile.name} is an empty database.`
+						mmkvFile = null
+					}
+				}
+
+				if (!crcFile) {
+					console.log("[+] User passed in 2 files, but 1 is not .crc")
+				}
+			}
+		}
+
+		return [mmkvFile, crcFile]
+
+	}
+
 	async function onDrop(e) {
 		e.preventDefault()
+
+		// Perform input validation on the files the user inputs in
 		if (e.dataTransfer.files) {
-			let mmkvFile = event.dataTransfer.files[0]
-			await loadFileIntoMMKVParser(mmkvFile)
+			// let mmkvFile = event.dataTransfer.files[0]
+			const [mmkvFile, crcFile] = await inputValidation(e.dataTransfer)
+			console.log(mmkvFile)
+			if (mmkvFile) {
+				await loadFileIntoMMKVParser(mmkvFile)
+			}
+			else {
+				modalHidden = false
+			}
+		}
+		else {
+			errorMessage += 'Something went wrong with choosing files.'
+			modalHidden = false
 		}
 		active = false
 	}
@@ -117,6 +196,11 @@ mmkv_parser`
 	  <MMKVTable mmkvMap={mmkvMap}/>
 	{/await}
 </div>
+
+<MMKVCellModal 
+  bind:hidden={modalHidden} 
+  content={errorMessage} 
+  subject={"Error/Warning"}/>
 
 
 <!-- Styles -->

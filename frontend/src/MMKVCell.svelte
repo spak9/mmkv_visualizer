@@ -87,8 +87,8 @@
 
 <MMKVCellModal 
   bind:hidden={expand_hidden} 
-  data={interpretHexData(dataTypeIndex)} 
-  dataType={dataType.split('-')[0]}/>
+  content={interpretHexData(dataTypeIndex)} 
+  subject={dataType.split('-')[0]}/>
 
 
 <!-- Styles -->

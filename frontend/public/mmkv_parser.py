@@ -217,7 +217,7 @@ class MMKVParser:
             raise TypeError(f'[+] Error while unpacking header bytes. Received {type(size)}')
 
 
-    def decrypt_and_reconstruct(self) -> 
+    # def decrypt_and_reconstruct(self) -> 
 
 
 
