@@ -82,7 +82,7 @@ mmkv_parser`
 
 
 	// Validates and updates state on the mmkv and optional CRC files passed in
-	// by the user. 
+	// by the user in the form of an Array of File(s). 
 	// Checks whether files were passed in, are "empty"
 	// Returns a tuple of [mmkvFile, crcFile], either of which could be null.
 	async function inputValidation(dataFiles) {
@@ -99,7 +99,9 @@ mmkv_parser`
 		}
 		else if (dataFiles.length > 2) {
 			console.log(`[+] User inputted ${dataFiles.length} files`)
-			errorMessage  = `User inputted ${dataFiles.length} files`
+			errorMessage  = `User inputted ${dataFiles.length} files. Please input either
+											 the MMKV file alone, or both the MMKV file and the accompanying
+											 .crc file.`
 		}
 		else if (dataFiles.length == 1) {
 			// MMKV File
@@ -107,9 +109,10 @@ mmkv_parser`
 			mmkvFile = dataFiles[0]
 
 			// Check if the MMKV file is "empty", that is, null bytes
-			let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer), 16)
+			let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer()), 16)
+			console.log(isEmpty)
 			if (isEmpty == 0 || isNaN(isEmpty)) {
-				errorMessage = `${mmkvFile.name} is an empty database`
+				errorMessage = `"${mmkvFile.name}" is an empty database`
 				mmkvFile = null
 			}
 		}
@@ -117,22 +120,26 @@ mmkv_parser`
 			// MMKV file and CRC file
 			console.log('[+] User passed in 2 files')
 			for (let file of dataFiles) {
+				console.log(file.name)
 				if (file.name.endsWith(".crc")) {
 					console.log("[+] Found crc file")
 					crcFile = file
 				}
 				else {
 					mmkvFile = file
-					let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer), 16)
+					let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer()), 16)
 					if (isEmpty == 0 || isNaN(isEmpty)) {
-						errorMessage = `${mmkvFile.name} is an empty database.`
+						errorMessage = `"${mmkvFile.name}" is an empty database.`
 						mmkvFile = null
 					}
 				}
-
-				if (!crcFile) {
-					console.log("[+] User passed in 2 files, but 1 is not .crc")
-				}
+			}
+			if (!crcFile) {
+				console.log("[+] User passed in 2 files, but 1 is not .crc")
+				errorMessage = `User passed in 2 files, but 1 is not a .crc file. 
+												Please pass in either the MMKV file alone, or both files including the accompanying .crc file.`
+				mmkvFile = null
+				crcFile = null
 			}
 		}
 
@@ -166,12 +173,12 @@ mmkv_parser`
 
 	async function onChange(e) {
 		// Perform input validation on the files the user inputs in
-		const [mmkvFile, crcFile] = await inputValidation(e.dataTransfer.files)
+		const [mmkvFile, crcFile] = await inputValidation(e.target.files)
 
 		// If a concrete MMKV file is returned, load it into the MMKVParser, else pop error Modal up
 		if (mmkvFile) {
 			await loadFileIntoMMKVParser(mmkvFile)
-			}
+		}
 		else {
 			modalHidden = false
 		}
@@ -195,7 +202,7 @@ mmkv_parser`
 	  		<p>Drag & drop or select an MMKV file to visualize</p>
 	    {/if}
 	    <div class="main-buttons">
-	    	<input on:change={onChange} type="file" id="mmkv-input" hidden>
+	    	<input on:change={onChange} type="file" id="mmkv-input" multiple hidden>
 	      <label for="mmkv-input">Open File</label>
     		<button><a href='/data_all_types' download>Download Sample Data</a></button>
 	    </div>
@@ -207,7 +214,7 @@ mmkv_parser`
 <MMKVCellModal 
   bind:hidden={modalHidden} 
   content={errorMessage} 
-  subject={"Error/Warning"}/>
+  subject={"Error"}/>
 
 
 <!-- Styles -->
