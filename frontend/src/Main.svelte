@@ -83,36 +83,40 @@ mmkv_parser`
 
 	// Validates and updates state on the mmkv and optional CRC files passed in
 	// by the user. 
-	// Checks whether files were passed in, is "empty"
-	// Returns a tuple of [mmkvFile, crcFile].
-	async function inputValidation(dataTransfer) {
+	// Checks whether files were passed in, are "empty"
+	// Returns a tuple of [mmkvFile, crcFile], either of which could be null.
+	async function inputValidation(dataFiles) {
 
+		// Prepare tuple of files and reset `errorMessage` state for Modal
 		let mmkvFile = null
 		let crcFile = null
 		errorMessage = ''
 
 		// Check number of files passed in
-		if (!dataTransfer.files) {
+		if (!dataFiles) {
 			console.log("[+] User did not input any files")
+			errorMessage = 'User did not input any files'
 		}
-		else if (dataTransfer.files.length > 2) {
-			console.log(`[+] User inputted ${dataTransfer.files.length} files`)
+		else if (dataFiles.length > 2) {
+			console.log(`[+] User inputted ${dataFiles.length} files`)
+			errorMessage  = `User inputted ${dataFiles.length} files`
 		}
-		else if (dataTransfer.files.length == 1) {
+		else if (dataFiles.length == 1) {
 			// MMKV File
 			console.log('[+] User passed in 1 file')
-			mmkvFile = dataTransfer.files[0]
+			mmkvFile = dataFiles[0]
+
+			// Check if the MMKV file is "empty", that is, null bytes
 			let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer), 16)
-			console.log(isEmpty)
 			if (isEmpty == 0 || isNaN(isEmpty)) {
-				errorMessage += `${mmkvFile.name} is an empty database.`
+				errorMessage = `${mmkvFile.name} is an empty database`
 				mmkvFile = null
 			}
 		}
-		else if (dataTransfer.files.length == 2) {
+		else if (dataFiles.length == 2) {
+			// MMKV file and CRC file
 			console.log('[+] User passed in 2 files')
-			for (let file of dataTransfer.files) {
-				console.log(file)
+			for (let file of dataFiles) {
 				if (file.name.endsWith(".crc")) {
 					console.log("[+] Found crc file")
 					crcFile = file
@@ -120,8 +124,8 @@ mmkv_parser`
 				else {
 					mmkvFile = file
 					let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer), 16)
-					if (isEmpty == 0) {
-						errorMesage += `${mmkvFile.name} is an empty database.`
+					if (isEmpty == 0 || isNaN(isEmpty)) {
+						errorMessage = `${mmkvFile.name} is an empty database.`
 						mmkvFile = null
 					}
 				}
@@ -133,40 +137,43 @@ mmkv_parser`
 		}
 
 		return [mmkvFile, crcFile]
-
 	}
 
 	async function onDrop(e) {
 		e.preventDefault()
 
 		// Perform input validation on the files the user inputs in
-		if (e.dataTransfer.files) {
-			// let mmkvFile = event.dataTransfer.files[0]
-			const [mmkvFile, crcFile] = await inputValidation(e.dataTransfer)
-			console.log(mmkvFile)
-			if (mmkvFile) {
-				await loadFileIntoMMKVParser(mmkvFile)
+		const [mmkvFile, crcFile] = await inputValidation(e.dataTransfer.files)
+
+		// If a concrete MMKV file is returned, load it into the MMKVParser, else pop error Modal up
+		if (mmkvFile) {
+			await loadFileIntoMMKVParser(mmkvFile)
 			}
-			else {
-				modalHidden = false
-			}
-		}
 		else {
-			errorMessage += 'Something went wrong with choosing files.'
 			modalHidden = false
 		}
+
+		// Turn off highlighting
 		active = false
 	}
 
 	function onDragOver(e) {
 		e.preventDefault()
+
+		// Turn on highlighting
 		active = true
 	}
 
 	async function onChange(e) {
-		if (e.target.files) {
-			let mmkvFile = e.target.files[0]
+		// Perform input validation on the files the user inputs in
+		const [mmkvFile, crcFile] = await inputValidation(e.dataTransfer.files)
+
+		// If a concrete MMKV file is returned, load it into the MMKVParser, else pop error Modal up
+		if (mmkvFile) {
 			await loadFileIntoMMKVParser(mmkvFile)
+			}
+		else {
+			modalHidden = false
 		}
 	}
 </script>
