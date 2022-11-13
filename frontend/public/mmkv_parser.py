@@ -2,6 +2,7 @@ from io import BufferedIOBase, BytesIO
 from pathlib import Path
 from typing import Optional, List, Union, Tuple, DefaultDict
 from collections import defaultdict
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes 
 
 import sys
 import struct

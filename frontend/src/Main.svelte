@@ -51,13 +51,14 @@
 	// We prepare the code prior because the python __init__ requires data. 
 	async function setupPyodideAndCode () {
 		pyodide = await loadPyodide()
+		await pyodide.loadPackage("cryptography")
 		mmkvParserPythonCode = await (await fetch("/mmkv_parser.py")).text()
 		console.log('[+] Pyodide and mmkv_parser.py all fetched')
 	}
 
-	// Called when user D&Ds or chooses a file to parse. Will parse the file
+	// Called when user D&Ds or chooses a file(s) to parse. Will parse the file(s)
 	// and update a lot of component state
-	async function loadFileIntoMMKVParser(mmkvFile) {
+	async function loadFilesIntoMMKVParser(mmkvFile, crcFile) {
 
 		// Reset prior MMKV values, if any
 		mmkvParser = undefined
@@ -77,9 +78,10 @@ mmkv_parser`
 
 		mmkvMap = mmkvParser.decode_into_map().toJs()
 		mmkvFileName = mmkvFile.name
+		crcFileName = crcFile?.name
+
 		console.log(mmkvMap)
 	}
-
 
 	// Validates and updates state on the mmkv and optional CRC files passed in
 	// by the user in the form of an Array of File(s). 
@@ -154,7 +156,7 @@ mmkv_parser`
 
 		// If a concrete MMKV file is returned, load it into the MMKVParser, else pop error Modal up
 		if (mmkvFile) {
-			await loadFileIntoMMKVParser(mmkvFile)
+			await loadFilesIntoMMKVParser(mmkvFile, crcFile)
 			}
 		else {
 			modalHidden = false
@@ -177,7 +179,7 @@ mmkv_parser`
 
 		// If a concrete MMKV file is returned, load it into the MMKVParser, else pop error Modal up
 		if (mmkvFile) {
-			await loadFileIntoMMKVParser(mmkvFile)
+			await loadFilesIntoMMKVParser(mmkvFile, crcFile)
 		}
 		else {
 			modalHidden = false
