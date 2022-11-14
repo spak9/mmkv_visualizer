@@ -173,32 +173,20 @@ class MMKVParser:
         self.pos: int = 0
         self.decoded_map: DefaultDict[str, List[bytes]] = defaultdict(list)
 
-        # IV from .crc file if it exists
+        # Found IV from .crc file - don't read anything from the stream if encrypted
         if self.crc_file:
-            crc_header_bytes = self.crc.read(28)
+            crc_header_bytes = self.crc_file.read(28)
             if len(crc_header_bytes) != 28:
                 raise ValueError('[+] Error while reading crc_file. Header bytes was not 28 bytes.')
             self.iv = crc_header_bytes[12:28]
+
+        # Cannot find IV from .crc file - prepare stream for decoding into a map
         else:
             print('[+] .CRC file was not passed in - is needed for decryption routines')
             self.iv = b''
 
-        # Read in first 4 header bytes - [0:4] is total size
-        self.header_bytes: bytes = self.mmkv_file.read(4)
-        if len(self.header_bytes) != 4:
-            raise ValueError('[+] Error while reading mmkv_file. Header bytes was not 4 bytes.')
-        self.pos += 4
- 
-        # TODO: find out the purpose of the varint in [4:x] position
-        # [4:X] is garbage bytes basically (0xffffff07) or is another varint
-        x, bytes_read = decode_unsigned_varint(self.mmkv_file)
-        if (x, bytes_read) == (-1, -1):
-            raise ValueError('[+] Error while decoding the [4:X] bytes of the mmkv_file.')
 
-        self.pos += bytes_read
-
-
-    def get_db_size(self) -> int:
+    def _get_db_size(self) -> int:
         """
         Returns the actual size known to the MMKV API for querying data. This includes older
         logged data that the actual MMKV API does not have the ability to query. 
@@ -217,7 +205,45 @@ class MMKVParser:
             raise TypeError(f'[+] Error while unpacking header bytes. Received {type(size)}')
 
 
-    # def decrypt_and_reconstruct(self) -> 
+    def _prepare_mmkv_stream_for_decoding(self):
+        # Read in first 4 header bytes - [0:4] is total size
+        self.header_bytes: bytes = self.mmkv_file.read(4)
+        if len(self.header_bytes) != 4:
+            raise ValueError('[+] Error while reading mmkv_file. Header bytes was not 4 bytes.')
+        self.pos += 4
+ 
+        # TODO: find out the purpose of the varint in [4:x] position
+        # [4:X] is garbage bytes basically (0xffffff07) or is another varint
+        x, bytes_read = decode_unsigned_varint(self.mmkv_file)
+        if (x, bytes_read) == (-1, -1):
+            raise ValueError('[+] Error while decoding the [4:X] bytes of the mmkv_file.')
+
+        self.pos += bytes_read
+
+
+    def decrypt_and_reconstruct(self, key: Union[str, bytes]) -> bytes:
+        """
+        Attempts to decrypt `self.mmkv_file` data with `key` and `self.iv` using
+        AES-128-CFB. Will return decrypted bytes as a fully decrypted MMKV file.
+
+        :param key: 16-byte AES key, or hexstring AES key
+        :return: decrypted mmkv file in bytes
+        """
+        print(f'iv: {self.iv}')
+        if isinstance(key, str):
+            key = bytes.fromhex(key)
+
+        size = self.mmkv_file.read(4)
+        print(f'size: {size}')
+        encrypted_data = self.mmkv_file.read()
+
+        cipher = Cipher(algorithms.AES(key), modes.CFB(self.iv))
+        decryptor = cipher.decryptor()
+        res = decryptor.update(encrypted_data) + decryptor.finalize()
+        res = size + res
+
+        self.mmkv_file = BytesIO(res)
+        return res
 
 
 
@@ -232,8 +258,11 @@ class MMKVParser:
         :return: a built up defaultdict, which is also an instance variable
         """
 
+        # Prepare first
+        self._prepare_mmkv_stream_for_decoding()
+
         # Get size of database
-        db_size = self.get_db_size()
+        db_size = self._get_db_size()
 
         # Check db_size - max out if needed
         if db_size == 0:

@@ -37,8 +37,11 @@
 	// Boolean for the MMKVCellModal
 	let modalHidden = true
 
-	// A string error/warning message that will presented on the MMKVCellModal
-	let errorMessage = ''
+	// String content that will be presented on the MMKVCellModal
+	let modalContent = ''
+
+	// String subject that will be presented on the MMKVCellModal
+	let modalSubject = ''
 
 
 
@@ -63,6 +66,8 @@
 		// Reset prior app state value
 		mmkvParser = undefined
 		mmkvMap = undefined
+		mmkvFileName = mmkvFile.name
+		crcFileName = crcFile?.name
 
 		let mmkvHexString = undefined
 		let crcHexString = undefined
@@ -73,23 +78,29 @@
 			crcHexString = hex(await crcFile.arrayBuffer())
 
 			// Check if CRC file has "iv" at bytes [12:28] - encrypted file
-			console.log(`[+] CRC IV bytes: ${crcHexString.slice(24, 56)}`)
+			let iv = crcHexString.slice(24, 56)
+			let isEncrypted = parseInt(iv, 16)
 
+			if (isEncrypted != 0) {
+				modalSubject = 'Encrypted MMKV Database'
+				modalContent = `The following MMKV database "${mmkvFileName}" is encrypted with the following hexstring IV "${iv}".` 
+				modalHidden = false
+			}
+			console.log(`[+] CRC IV bytes: ${iv}`)
 		}
 
-		let init = `mmkv_parser = MMKVParser("${mmkvHexString}")`
+		let init = `mmkv_parser = MMKVParser("${mmkvHexString}", "${crcHexString}")`
 		let code = `
 ${mmkvParserPythonCode}
 ${init}
 mmkv_parser`
 
 		// Run our prepared python code w/ hex data - update various pieces of state
+		console.log(init)
 		mmkvParser = pyodide.runPython(code)
 		mmkvParserStore.set(mmkvParser)
 
 		mmkvMap = mmkvParser.decode_into_map().toJs()
-		mmkvFileName = mmkvFile.name
-		crcFileName = crcFile?.name
 
 		console.log(mmkvMap)
 	}
@@ -100,19 +111,20 @@ mmkv_parser`
 	// Returns a tuple of [mmkvFile, crcFile], either of which could be null.
 	async function inputValidation(dataFiles) {
 
-		// Prepare tuple of files and reset `errorMessage` state for Modal
+		// Prepare tuple of files and reset `modalContent` state for Modal
 		let mmkvFile = null
 		let crcFile = null
-		errorMessage = ''
+		modalContent = ''
+		modalSubject = 'Error'
 
 		// Check number of files passed in
 		if (!dataFiles) {
 			console.log("[+] User did not input any files")
-			errorMessage = 'User did not input any files'
+			modalContent = 'User did not input any files'
 		}
 		else if (dataFiles.length > 2) {
 			console.log(`[+] User inputted ${dataFiles.length} files`)
-			errorMessage  = `User inputted ${dataFiles.length} files. Please input either
+			modalContent  = `User inputted ${dataFiles.length} files. Please input either
 											 the MMKV file alone, or both the MMKV file and the accompanying
 											 .crc file.`
 		}
@@ -125,7 +137,7 @@ mmkv_parser`
 			let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer()), 16)
 			console.log(isEmpty)
 			if (isEmpty == 0 || isNaN(isEmpty)) {
-				errorMessage = `"${mmkvFile.name}" is an empty database`
+				modalContent = `"${mmkvFile.name}" is an empty database`
 				mmkvFile = null
 			}
 		}
@@ -142,14 +154,14 @@ mmkv_parser`
 					mmkvFile = file
 					let isEmpty = parseInt(hex(await mmkvFile.arrayBuffer()), 16)
 					if (isEmpty == 0 || isNaN(isEmpty)) {
-						errorMessage = `"${mmkvFile.name}" is an empty database.`
+						modalContent = `"${mmkvFile.name}" is an empty database.`
 						mmkvFile = null
 					}
 				}
 			}
 			if (!crcFile) {
 				console.log("[+] User passed in 2 files, but 1 is not .crc")
-				errorMessage = `User passed in 2 files, but 1 is not a .crc file. 
+				modalContent = `User passed in 2 files, but 1 is not a .crc file. 
 												Please pass in either the MMKV file alone, or both files including the accompanying .crc file.`
 				mmkvFile = null
 				crcFile = null
@@ -226,8 +238,8 @@ mmkv_parser`
 
 <MMKVCellModal 
   bind:hidden={modalHidden} 
-  content={errorMessage} 
-  subject={"Error"}/>
+  content={modalContent} 
+  subject={modalSubject}/>
 
 
 <!-- Styles -->
