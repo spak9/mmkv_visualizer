@@ -60,12 +60,23 @@
 	// and update a lot of component state
 	async function loadFilesIntoMMKVParser(mmkvFile, crcFile) {
 
-		// Reset prior MMKV values, if any
+		// Reset prior app state value
 		mmkvParser = undefined
 		mmkvMap = undefined
 
+		let mmkvHexString = undefined
+		let crcHexString = undefined
+
 		// Convert File data into a hex string, preparing the `mmkvParser` decoding 
-		let mmkvHexString = hex(await mmkvFile.arrayBuffer())
+		mmkvHexString = hex(await mmkvFile.arrayBuffer())
+		if (crcFile) {
+			crcHexString = hex(await crcFile.arrayBuffer())
+
+			// Check if CRC file has "iv" at bytes [12:28] - encrypted file
+			console.log(`[+] CRC IV bytes: ${crcHexString.slice(24, 56)}`)
+
+		}
+
 		let init = `mmkv_parser = MMKVParser("${mmkvHexString}")`
 		let code = `
 ${mmkvParserPythonCode}

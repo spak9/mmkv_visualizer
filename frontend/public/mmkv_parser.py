@@ -167,7 +167,6 @@ class MMKVParser:
         else:
             pass
 
-
         # Initialize our files
         self.mmkv_file: BufferedIOBase = mmkv_file_data
         self.crc_file: Optional[BufferedIOBase] = crc_file_data
