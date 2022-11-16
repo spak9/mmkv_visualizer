@@ -322,6 +322,7 @@ class MMKVParser:
 
         return self.decoded_map
 
+
     def decode_as_int32(self, value: Union[str, bytes]) -> int:
         """
         Decodes `value` as a signed 32-bit int.
@@ -332,6 +333,7 @@ class MMKVParser:
         if isinstance(value, str):
             value = bytes.fromhex(value)
         return decode_signed_varint(BytesIO(value), mask=32)[0]
+
 
     def decode_as_int64(self, value: Union[str, bytes]) -> int:
         """
@@ -355,6 +357,7 @@ class MMKVParser:
             value = bytes.fromhex(value)
         return decode_unsigned_varint(BytesIO(value), mask=32)[0]
 
+
     def decode_as_uint64(self, value: Union[str, bytes]) -> int:
         """
         Decodes `value` as an unsigned 64-bit int.
@@ -365,6 +368,7 @@ class MMKVParser:
         if isinstance(value, str):
             value = bytes.fromhex(value)
         return decode_unsigned_varint(BytesIO(value), mask=64)[0]
+
 
     def decode_as_string(self, value: Union[str, bytes]) -> Optional[str]:
         """
@@ -389,6 +393,7 @@ class MMKVParser:
             print(f'[+] Could not UTF-8 decode {value!r}')
             return None
 
+
     def decode_as_bytes(self, value: Union[str, bytes]) -> Optional[bytes]:
         """
         Decodes `value` as bytes.
@@ -412,6 +417,7 @@ class MMKVParser:
             print(f'[+] Could not decode bytes')
             return None
 
+
     def decode_as_float(self, value: Union[str, bytes]) -> Optional[float]:
         """
         Decodes `value` as a double (8-bytes), which is a float type in Python.
@@ -427,6 +433,7 @@ class MMKVParser:
             return None
 
         return struct.unpack('<d', value)[0]
+
 
     def decode_as_bool(self, value: Union[str, bytes]) -> Optional[bool]:
         """

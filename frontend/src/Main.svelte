@@ -83,7 +83,8 @@
 
 			if (isEncrypted != 0) {
 				modalSubject = 'Encrypted MMKV Database'
-				modalContent = `The following MMKV database "${mmkvFileName}" is encrypted with the following hexstring IV "${iv}".` 
+				modalContent = `The following MMKV database "${mmkvFileName}" is encrypted with the following hexstring IV "${iv}".`
+				modalContent += "Please enter the AES key as a hexstring (e.g 6b696e64616c6f6e677365637265746b)."
 				modalHidden = false
 			}
 			console.log(`[+] CRC IV bytes: ${iv}`)
@@ -96,13 +97,17 @@ ${init}
 mmkv_parser`
 
 		// Run our prepared python code w/ hex data - update various pieces of state
-		console.log(init)
 		mmkvParser = pyodide.runPython(code)
-		mmkvParserStore.set(mmkvParser)
+		// mmkvMap = mmkvParser.decode_into_map().toJs()
 
-		mmkvMap = mmkvParser.decode_into_map().toJs()
+		// console.log(mmkvMap)
+	}
 
-		console.log(mmkvMap)
+
+	async function runParser(isEncrypted) {
+		if (isEncrypted) {
+			mmkvParser.decrypt_and_reconstruct()
+		}
 	}
 
 	// Validates and updates state on the mmkv and optional CRC files passed in
