@@ -33,6 +33,7 @@
 
 <!-- Styling -->
 <style>
+	span { white-space: pre-line; }
 	.modal {
 		padding: 16px;
 		width: 60vw;

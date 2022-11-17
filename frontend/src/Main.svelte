@@ -44,7 +44,6 @@
 	let modalSubject = ''
 
 
-
 	/**
 	 *  Functions 
 	 */
@@ -71,43 +70,47 @@
 
 		let mmkvHexString = undefined
 		let crcHexString = undefined
+		let isEncrypted = undefined
+		let constructorCode = undefined
+		let iv = undefined
 
-		// Convert File data into a hex string, preparing the `mmkvParser` decoding 
+		// Convert File(s) data into a hexstring(s), preparing the `mmkvParser` decoding 
 		mmkvHexString = hex(await mmkvFile.arrayBuffer())
 		if (crcFile) {
 			crcHexString = hex(await crcFile.arrayBuffer())
 
 			// Check if CRC file has "iv" at bytes [12:28] - encrypted file
-			let iv = crcHexString.slice(24, 56)
-			let isEncrypted = parseInt(iv, 16)
-
-			if (isEncrypted != 0) {
-				modalSubject = 'Encrypted MMKV Database'
-				modalContent = `The following MMKV database "${mmkvFileName}" is encrypted with the following hexstring IV "${iv}".`
-				modalContent += "Please enter the AES key as a hexstring (e.g 6b696e64616c6f6e677365637265746b)."
-				modalHidden = false
-			}
-			console.log(`[+] CRC IV bytes: ${iv}`)
+			iv = crcHexString.slice(24, 56)
+			isEncrypted = parseInt(iv, 16)
 		}
 
-		let init = `mmkv_parser = MMKVParser("${mmkvHexString}", "${crcHexString}")`
-		let code = `
+		// Prepare correct constructor
+		if (crcHexString) {
+			constructorCode = `mmkv_parser = MMKVParser("${mmkvHexString}", "${crcHexString}")`
+		}
+		else {
+			constructorCode = `mmkv_parser = MMKVParser("${mmkvHexString}")`
+		}
+		let pythonCode = `
 ${mmkvParserPythonCode}
-${init}
+${constructorCode}
 mmkv_parser`
 
-		// Run our prepared python code w/ hex data - update various pieces of state
-		mmkvParser = pyodide.runPython(code)
-		// mmkvMap = mmkvParser.decode_into_map().toJs()
+		// Instantiate our MMKVParser instance with ALL the neccesary data - ready to be used!
+		mmkvParser = pyodide.runPython(pythonCode)
+		mmkvParserStore.set(mmkvParser)
 
-		// console.log(mmkvMap)
-	}
-
-
-	async function runParser(isEncrypted) {
-		if (isEncrypted) {
-			mmkvParser.decrypt_and_reconstruct()
+		// Use MMKVParser to decode - if encrypted, prompt for key, else decode_into_map() immediately
+		if (isEncrypted != 0 && !isNaN(isEncrypted))  {
+			modalSubject = 'Encrypted MMKV Database'
+			modalContent = `The following MMKV database "${mmkvFileName}" is encrypted with the following hexstring IV "${iv}".
+			\n\nPlease enter the AES key as a hexstring (e.g 6b696e64616c6f6e677365637265746b).`
+			modalHidden = false
 		}
+		else {
+			mmkvMap = mmkvParser.decode_into_map().toJs()
+		}
+
 	}
 
 	// Validates and updates state on the mmkv and optional CRC files passed in
