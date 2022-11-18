@@ -225,6 +225,7 @@ class MMKVParser:
         """
         Attempts to decrypt `self.mmkv_file` data with `key` and `self.iv` using
         AES-128-CFB. Will return decrypted bytes as a fully decrypted MMKV file.
+        Will pad `key` with NULL bytes or only take the first 16-bytes.
 
         :param key: 16-byte AES key, or hexstring AES key
         :return: decrypted mmkv file in bytes
@@ -232,6 +233,13 @@ class MMKVParser:
         print(f'iv: {self.iv}')
         if isinstance(key, str):
             key = bytes.fromhex(key)
+
+        # Validate the key size
+        if len(key) > 16:
+            key = key[:16]
+        elif len(key) < 16:
+            diff = (16 - len(key)) * b'\x00'
+            key += diff
 
         size = self.mmkv_file.read(4)
         print(f'size: {size}')

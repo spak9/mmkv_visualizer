@@ -108,6 +108,11 @@ mmkv_parser`
 		}
 		else {
 			mmkvMap = mmkvParser.decode_into_map().toJs()
+			if (mmkvMap?.size == 0) {
+				modalSubject = "Error"
+				modalContent = `The MMKV Map size was 0 - most likely NOT an MMKV file or is an encrypted file.`
+				modalHidden = false
+			}
 		}
 
 	}
