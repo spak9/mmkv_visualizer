@@ -1,8 +1,13 @@
 <script>
 
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
+
 	export let hidden = true
 	export let content
 	export let subject
+	let aesKey = ""
 
 	async function copyContent(e) {
     e.stopPropagation()
@@ -15,6 +20,15 @@
         console.log('[+] Copy failed')
       })
   }
+
+  function sendAesKey() {
+  	console.log(`[+] AES Key: ${aesKey}`)
+  	dispatch('sendAesKey', {
+  		aesKey: aesKey
+  	})
+
+  }
+  
 </script>
 
 
@@ -24,6 +38,14 @@
 	<span class="material-icons md-18" on:click={copyContent}>content_copy</span>
 	<hr>
 	<span>{content}</span>
+
+	{#if subject == "Encrypted MMKV Database"}
+		<br><br>
+		<label for="aes-key">Please enter your AES key in the form of a hexstring:</label>
+		<input bind:value={aesKey} type="text" id="aes-key" name="aes-key">
+		<br>
+		<button on:click={sendAesKey}>Decrypt</button>
+	{/if}
 </div>
 
 <div class="overlay" class:hidden={hidden} on:click={() => hidden = true}>

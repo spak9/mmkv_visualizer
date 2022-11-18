@@ -103,8 +103,7 @@ mmkv_parser`
 		// Use MMKVParser to decode - if encrypted, prompt for key, else decode_into_map() immediately
 		if (isEncrypted != 0 && !isNaN(isEncrypted))  {
 			modalSubject = 'Encrypted MMKV Database'
-			modalContent = `The following MMKV database "${mmkvFileName}" is encrypted with the following hexstring IV "${iv}".
-			\n\nPlease enter the AES key as a hexstring (e.g 6b696e64616c6f6e677365637265746b).`
+			modalContent = `The following MMKV database "${mmkvFileName}" is encrypted with the following hexstring IV "${iv}".`
 			modalHidden = false
 		}
 		else {
@@ -179,6 +178,13 @@ mmkv_parser`
 		return [mmkvFile, crcFile]
 	}
 
+	function onSendAesKey(e) {
+		console.log('[+] User inputted hexstring key -- attempt decryption with hexstring key')
+		mmkvParser.decrypt_and_reconstruct(e.detail.aesKey)
+		mmkvMap = mmkvParser.decode_into_map().toJs()
+		modalHidden = true
+	}
+
 	async function onDrop(e) {
 		e.preventDefault()
 
@@ -245,6 +251,7 @@ mmkv_parser`
 </div>
 
 <MMKVCellModal 
+	on:sendAesKey={onSendAesKey}
   bind:hidden={modalHidden} 
   content={modalContent} 
   subject={modalSubject}/>
