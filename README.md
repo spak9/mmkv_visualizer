@@ -1,6 +1,6 @@
 # mmkv_visualizer
 A web application that will allow you to visualize [MMKV](https://github.com/Tencent/MMKV) databases, with all processing done client-side.
-The [web service](https://www.mmkv-visualizer.com/) utilizes [Pyodide](https://pyodide.org/en/stable/) enables a python 
+The [web service](https://www.mmkv-visualizer.com/) utilizes [Pyodide](https://pyodide.org/en/stable/) which enables a python 
 runtime within the browser, in which the main MMKV parsing code is written in.
 It sends no data up to any server and all the parsing happens right in your browser.
 
@@ -13,7 +13,7 @@ There are three ways you can use the following code:
 The main way is to utilize the online web service provided at https://www.mmkv-visualizer.com/.
 You can simply drag & drop or choose an MMKV of your choice, then visualize the data.
 The visualizer allows you to iterate through different data type encodings (MMKV uses protobuf encoding)
-by simply clicking any table cell, as well as expand the data to get a deeper look. 
+by simply clicking any table cell, as well as expand the data to get a deeper look.
 
 2. Local Web Application:
 
@@ -30,8 +30,16 @@ does not allow you to see older data, while this parser can. This may be importa
 
 You can also find a set of python tests found at `tests`.
 
+## Decryption
+
+The MMKV library natives allows users to encrypt their MMKV files using AES-128 in CFB mode.
+If needed, the application allows decryption of the data, but must be given the following:
+
+1. The encrypted MMKV file AND corresponding .crc file (the .crc file contains the 16-byte IV)
+2. The AES key. (Will be prompted to enter the AES key in the form of a hexstring, allowing any length for the key)
+
 ## Roadmap
 
-- [ ] Expose more metadata: whether database size was found, or if it's a best effort approach, file is empty, file is probablistically encrypted.
+- [x] Expose more metadata: whether database size was found, or if it's a best effort approach, file is empty, file is probablistically encrypted.
 - [ ] Experiment with new UI design and see if Svelte Material is a viable solution.
-- [ ] Enable decryption with user input of encryption key.
+- [x] Enable decryption with user input of encryption key.

@@ -54,20 +54,8 @@ class TestMMKVParser(unittest.TestCase):
 
 	def test_mmkv_parser_init_with_buffer_empty(self):
 		with self.assertRaises(ValueError):
-			MMKVParser(mmkv_file_data=BytesIO(b''))
-
-
-	# Tests for get_db_size()
-	def test_get_db_size_simple_int_keypair(self):
-		with open('data_int32_keypair', 'rb') as f:
-			mmkv_parser = MMKVParser(mmkv_file_data=f)
-		self.assertEqual(mmkv_parser.get_db_size(), 11)
-
-	def test_get_db_size_simple_int_keypair_with_remove(self):
-		with open('data_int32_keypair_with_remove', 'rb') as f:
-			mmkv_parser = MMKVParser(mmkv_file_data=f)
-		self.assertEqual(mmkv_parser.get_db_size(), 16)
-
+			parser = MMKVParser(mmkv_file_data=BytesIO(b''))
+			parser.decode_into_map()
 
 	# Tests for decode_into_map()
 	def test_decode_map_simple_int_keypair(self):
@@ -172,7 +160,24 @@ class TestMMKVParser(unittest.TestCase):
 			mmkv_map = mmkv_parser.decode_into_map()
 			hexstr = mmkv_map.get('string_key')[0].hex()
 			self.assertEqual('steven pak', mmkv_parser.decode_as_string(hexstr))
-							
+
+
+	# Tests for decrypted databases
+	def test_decrypt_one(self):
+		with open('create_data_encrypt', 'rb') as f, open('create_data_encrypt.crc', 'rb') as c:
+			mmkv_parser = MMKVParser(mmkv_file_data=f, crc_file_data=c)
+			mmkv_parser.decrypt_and_reconstruct(key=b'kindalongsecretkey'[:16])
+			mmkv_map = mmkv_parser.decode_into_map()
+
+			m = defaultdict(list, {
+				'bool_key': [b'\x01'],
+				'name': [b'\x06steven'],
+				'float_key':[b'\x1f\x85\xebQ\xb8\x1e\t@'],
+				'int_key': [b'*']
+			})
+
+			self.assertEqual(mmkv_map, m)
+
 
 if __name__ == "__main__":
 	unittest.main()

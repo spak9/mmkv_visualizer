@@ -2,6 +2,7 @@ from io import BufferedIOBase, BytesIO
 from pathlib import Path
 from typing import Optional, List, Union, Tuple, DefaultDict
 from collections import defaultdict
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes 
 
 import sys
 import struct
@@ -166,29 +167,26 @@ class MMKVParser:
         else:
             pass
 
-
         # Initialize our files
         self.mmkv_file: BufferedIOBase = mmkv_file_data
         self.crc_file: Optional[BufferedIOBase] = crc_file_data
         self.pos: int = 0
         self.decoded_map: DefaultDict[str, List[bytes]] = defaultdict(list)
 
-        # Read in first 4 header bytes - [0:4] is total size
-        self.header_bytes: bytes = self.mmkv_file.read(4)
-        if len(self.header_bytes) != 4:
-            raise ValueError('[+] Error while reading mmkv_file. Header bytes was not 4 bytes.')
-        self.pos += 4
- 
-        # TODO: find out the purpose of the varint in [4:x] position
-        # [4:X] is garbage bytes basically (0xffffff07) or is another varint
-        x, bytes_read = decode_unsigned_varint(self.mmkv_file)
-        if (x, bytes_read) == (-1, -1):
-            raise ValueError('[+] Error while decoding the [4:X] bytes of the mmkv_file.')
+        # Found IV from .crc file - don't read anything from the stream if encrypted
+        if self.crc_file:
+            crc_header_bytes = self.crc_file.read(28)
+            if len(crc_header_bytes) != 28:
+                raise ValueError('[+] Error while reading crc_file. Header bytes was not 28 bytes.')
+            self.iv = crc_header_bytes[12:28]
 
-        self.pos += bytes_read
+        # Cannot find IV from .crc file - prepare stream for decoding into a map
+        else:
+            print('[+] .CRC file was not passed in - is needed for decryption routines')
+            self.iv = b''
 
 
-    def get_db_size(self) -> int:
+    def _get_db_size(self) -> int:
         """
         Returns the actual size known to the MMKV API for querying data. This includes older
         logged data that the actual MMKV API does not have the ability to query. 
@@ -207,6 +205,59 @@ class MMKVParser:
             raise TypeError(f'[+] Error while unpacking header bytes. Received {type(size)}')
 
 
+    def _prepare_mmkv_stream_for_decoding(self):
+        # Read in first 4 header bytes - [0:4] is total size
+        self.header_bytes: bytes = self.mmkv_file.read(4)
+        if len(self.header_bytes) != 4:
+            raise ValueError('[+] Error while reading mmkv_file. Header bytes was not 4 bytes.')
+        self.pos += 4
+ 
+        # TODO: find out the purpose of the varint in [4:x] position
+        # [4:X] is garbage bytes basically (0xffffff07) or is another varint
+        x, bytes_read = decode_unsigned_varint(self.mmkv_file)
+        if (x, bytes_read) == (-1, -1):
+            raise ValueError('[+] Error while decoding the [4:X] bytes of the mmkv_file.')
+
+        self.pos += bytes_read
+
+
+    def decrypt_and_reconstruct(self, key: Union[str, bytes]) -> bytes:
+        """
+        Attempts to decrypt `self.mmkv_file` data with `key` and `self.iv` using
+        AES-128-CFB. Will return decrypted bytes as a fully decrypted MMKV file.
+        Will pad `key` with NULL bytes or only take the first 16-bytes.
+
+        :param key: 16-byte AES key, or hexstring AES key
+        :return: decrypted mmkv file in bytes
+        """
+        print(f'iv: {self.iv}')
+        if isinstance(key, str):
+            key = bytes.fromhex(key)
+
+        # Validate the key size
+        if len(key) > 16:
+            key = key[:16]
+        elif len(key) < 16:
+            diff = (16 - len(key)) * b'\x00'
+            key += diff
+
+        size = self.mmkv_file.read(4)
+        print(f'size: {size}')
+        encrypted_data = self.mmkv_file.read()
+
+        cipher = Cipher(algorithms.AES(key), modes.CFB(self.iv))
+        decryptor = cipher.decryptor()
+        res = decryptor.update(encrypted_data) + decryptor.finalize()
+        res = size + res
+
+        self.mmkv_file = BytesIO(res)
+        return res
+
+
+
+    '''
+        Decoding Procedures
+    '''
     def decode_into_map(self) -> DefaultDict[str, List[bytes]]:
         """
         A best-effort approach on linearly parsing the `mmkv_file` stream and building up 
@@ -215,8 +266,11 @@ class MMKVParser:
         :return: a built up defaultdict, which is also an instance variable
         """
 
+        # Prepare first
+        self._prepare_mmkv_stream_for_decoding()
+
         # Get size of database
-        db_size = self.get_db_size()
+        db_size = self._get_db_size()
 
         # Check db_size - max out if needed
         if db_size == 0:
@@ -276,6 +330,7 @@ class MMKVParser:
 
         return self.decoded_map
 
+
     def decode_as_int32(self, value: Union[str, bytes]) -> int:
         """
         Decodes `value` as a signed 32-bit int.
@@ -286,6 +341,7 @@ class MMKVParser:
         if isinstance(value, str):
             value = bytes.fromhex(value)
         return decode_signed_varint(BytesIO(value), mask=32)[0]
+
 
     def decode_as_int64(self, value: Union[str, bytes]) -> int:
         """
@@ -309,6 +365,7 @@ class MMKVParser:
             value = bytes.fromhex(value)
         return decode_unsigned_varint(BytesIO(value), mask=32)[0]
 
+
     def decode_as_uint64(self, value: Union[str, bytes]) -> int:
         """
         Decodes `value` as an unsigned 64-bit int.
@@ -319,6 +376,7 @@ class MMKVParser:
         if isinstance(value, str):
             value = bytes.fromhex(value)
         return decode_unsigned_varint(BytesIO(value), mask=64)[0]
+
 
     def decode_as_string(self, value: Union[str, bytes]) -> Optional[str]:
         """
@@ -343,6 +401,7 @@ class MMKVParser:
             print(f'[+] Could not UTF-8 decode {value!r}')
             return None
 
+
     def decode_as_bytes(self, value: Union[str, bytes]) -> Optional[bytes]:
         """
         Decodes `value` as bytes.
@@ -366,6 +425,7 @@ class MMKVParser:
             print(f'[+] Could not decode bytes')
             return None
 
+
     def decode_as_float(self, value: Union[str, bytes]) -> Optional[float]:
         """
         Decodes `value` as a double (8-bytes), which is a float type in Python.
@@ -377,10 +437,11 @@ class MMKVParser:
             value = bytes.fromhex(value)
 
         if len(value) != 8:
-            print(f'[+] Could not float decode {value} due to length')
+            print(f'[+] Could not float decode {value!r} due to length')
             return None
 
         return struct.unpack('<d', value)[0]
+
 
     def decode_as_bool(self, value: Union[str, bytes]) -> Optional[bool]:
         """

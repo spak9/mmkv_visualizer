@@ -1,38 +1,78 @@
 <script>
 
-	export let hidden = true
-	export let data
-	export let dataType
+	/**
+	 * Imports
+	 */
+	import { createEventDispatcher } from 'svelte';
 
+	/**
+	 * State
+	 */
+	export let hidden = true
+	export let content = ''
+	export let subject = ''
+	let aesKey = ""
+	const dispatch = createEventDispatcher();
+
+	/**
+	 *  Functions 
+	 */
+	
+	// Will copy the `content` state string into the browser clipboard
 	async function copyContent(e) {
     e.stopPropagation()
     console.log("[+] Copy Content")
-    navigator.clipboard.writeText(data).then(
+    navigator.clipboard.writeText(content).then(
       () => {
-        console.log('[+] Copied data')
+        console.log('[+] Copied content')
       },
       () => {
         console.log('[+] Copy failed')
       })
   }
+
+  // Will dispatch a custom event called "sendAesKey", which will
+  // hold the `aesKey` hexstring from the user.
+  function sendAesKey() {
+  	console.log(`[+] AES Key: ${aesKey}`)
+  	dispatch('sendAesKey', {
+  		aesKey: aesKey
+  	})
+  }
+
+  // Will reset all the props to default.
+  function exit() {
+  	console.log('[+] Reset props from MMKVCellModal')
+  	hidden = true
+  	content = ''
+  	subject = ''
+  }
+  
 </script>
 
 
 <!-- HTML -->
 <div class="modal" class:hidden={hidden}>
-	<span class="data-type">{dataType}</span>
+	<span class="subject">{subject}</span>
 	<span class="material-icons md-18" on:click={copyContent}>content_copy</span>
 	<hr>
-	<span>{data}</span>
+	<span>{content}</span>
+
+	{#if subject == "Encrypted MMKV Database"}
+		<br><br>
+		<label for="aes-key">Please enter your AES key in the form of a hexstring:</label>
+		<input bind:value={aesKey} type="text" id="aes-key" name="aes-key">
+		<br>
+		<button on:click={sendAesKey}>Decrypt</button>
+	{/if}
 </div>
 
-<div class="overlay" class:hidden={hidden} on:click={() => hidden = true}>
-	
-</div>
+<div class="overlay" class:hidden={hidden} on:click={exit}></div>
 
 
 <!-- Styling -->
 <style>
+	span { white-space: pre-line; }
 	.modal {
 		padding: 16px;
 		width: 60vw;
@@ -61,5 +101,5 @@
 	.hidden {
 		display: none;
 	}
-	.data-type {color: rgba(0, 0, 0, 0.5);}
+	.subject {color: rgba(0, 0, 0, 0.5);}
 </style>
