@@ -183,11 +183,23 @@ mmkv_parser`
 		return [mmkvFile, crcFile]
 	}
 
+	// A callback for the "sendAesKey" event from the `MMKVCellModal` component.
+	// Will attempt to decrypt and reconstruct the encrypted mmkv file with the extracted key
+	// and decode the file for visualization.
+	// Will pop up the modal if there is a Pyodide "PythonError".
 	function onSendAesKey(e) {
 		console.log('[+] User inputted hexstring key -- attempt decryption with hexstring key')
-		mmkvParser.decrypt_and_reconstruct(e.detail.aesKey)
-		mmkvMap = mmkvParser.decode_into_map().toJs()
-		modalHidden = true
+		let key = e.detail.aesKey
+		try {
+			mmkvParser.decrypt_and_reconstruct(e.detail.aesKey)
+			mmkvMap = mmkvParser.decode_into_map().toJs()
+			modalHidden = true
+		}
+		catch (err) {
+			modalSubject = 'Error'
+			modalContent = `The following AES key "${key}" did not work. Is it a hexstring?`
+			modalHidden = false
+		}	
 	}
 
 	async function onDrop(e) {
