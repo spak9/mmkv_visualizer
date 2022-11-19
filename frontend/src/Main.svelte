@@ -114,7 +114,6 @@ mmkv_parser`
 				modalHidden = false
 			}
 		}
-
 	}
 
 	// Validates and updates state on the mmkv and optional CRC files passed in
@@ -252,7 +251,7 @@ mmkv_parser`
 		<h3>Loading MMKV Parser...</h3>
 	{:then}
 	  <div class="instructions">
-	  	{#if mmkvFileName}
+	  	{#if mmkvMap?.size}
 	  		<p>Parsing "{mmkvFileName}" File</p>
 	  	{:else} 
 	  		<p>Drag & drop or select an MMKV file to visualize.<br>
@@ -264,15 +263,18 @@ mmkv_parser`
     		<button><a href='/data_all_types' download>Download Sample Data</a></button>
 	    </div>
 	  </div>
-	  <MMKVTable mmkvMap={mmkvMap}/>
+
+	  {#if mmkvMap?.size} 
+	  	<MMKVTable mmkvMap={mmkvMap}/>
+	  {/if}
 	{/await}
 </div>
 
 <MMKVCellModal 
 	on:sendAesKey={onSendAesKey}
   bind:hidden={modalHidden} 
-  content={modalContent} 
-  subject={modalSubject}/>
+  bind:content={modalContent} 
+  bind:subject={modalSubject}/>
 
 
 <!-- Styles -->

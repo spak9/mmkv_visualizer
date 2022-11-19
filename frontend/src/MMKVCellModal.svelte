@@ -9,8 +9,8 @@
 	 * State
 	 */
 	export let hidden = true
-	export let content
-	export let subject
+	export let content = ''
+	export let subject = ''
 	let aesKey = ""
 	const dispatch = createEventDispatcher();
 
@@ -39,6 +39,14 @@
   		aesKey: aesKey
   	})
   }
+
+  // Will reset all the props to default.
+  function exit() {
+  	console.log('[+] Reset props from MMKVCellModal')
+  	hidden = true
+  	content = ''
+  	subject = ''
+  }
   
 </script>
 
@@ -59,7 +67,7 @@
 	{/if}
 </div>
 
-<div class="overlay" class:hidden={hidden} on:click={() => hidden = true}></div>
+<div class="overlay" class:hidden={hidden} on:click={exit}></div>
 
 
 <!-- Styling -->
