@@ -1,14 +1,24 @@
 <script>
 
+	/**
+	 * Imports
+	 */
 	import { createEventDispatcher } from 'svelte';
 
-	const dispatch = createEventDispatcher();
-
+	/**
+	 * State
+	 */
 	export let hidden = true
 	export let content
 	export let subject
 	let aesKey = ""
+	const dispatch = createEventDispatcher();
 
+	/**
+	 *  Functions 
+	 */
+	
+	// Will copy the `content` state string into the browser clipboard
 	async function copyContent(e) {
     e.stopPropagation()
     console.log("[+] Copy Content")
@@ -21,12 +31,13 @@
       })
   }
 
+  // Will dispatch a custom event called "sendAesKey", which will
+  // hold the `aesKey` hexstring from the user.
   function sendAesKey() {
   	console.log(`[+] AES Key: ${aesKey}`)
   	dispatch('sendAesKey', {
   		aesKey: aesKey
   	})
-
   }
   
 </script>
@@ -48,9 +59,7 @@
 	{/if}
 </div>
 
-<div class="overlay" class:hidden={hidden} on:click={() => hidden = true}>
-	
-</div>
+<div class="overlay" class:hidden={hidden} on:click={() => hidden = true}></div>
 
 
 <!-- Styling -->

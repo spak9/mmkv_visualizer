@@ -243,7 +243,8 @@ mmkv_parser`
 	  	{#if mmkvFileName}
 	  		<p>Parsing "{mmkvFileName}" File</p>
 	  	{:else} 
-	  		<p>Drag & drop or select an MMKV file to visualize</p>
+	  		<p>Drag & drop or select an MMKV file to visualize.<br>
+	  				Encrypted files must be accompanied with their <i>.crc</i> file.</p>
 	    {/if}
 	    <div class="main-buttons">
 	    	<input on:change={onChange} type="file" id="mmkv-input" multiple hidden>
