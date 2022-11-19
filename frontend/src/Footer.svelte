@@ -6,11 +6,15 @@
 <div class="page-footer">
   <h1>Features</h1>
   <ul>
-  	<li>Visualize the most recent key-value pairs, as well as older logged values not available via the API.</li>
+  	<li>Visualize the most recent key-value pairs, as well as older logged values not available via the native API.</li>
   	<li>Interpret the values in all possible ways, including strings, bytes, ints, floats, and bools.</li>
+  	<li>Decrypt MMKV files with the associated <i>.crc</i> file and an AES key</li>
   </ul>
-  <!-- <p class="text">- Visualize the most recent key-value pairs, as well as older logged values not available via the API.</p>
-  <p class="text">- Interpret the values in all possible ways, including strings, bytes, ints, floats, and bools.</p> -->
+  <h1>Credits</h1>
+  <ul>
+  	<li><a href="https://qwtel.com/">Florian Klampfer</a>, inspiring me with <a href="https://sqliteviewer.app/"><i>SQLite Viewer</i></a></li>
+  	<li><a href="https://pyodide.org/en/stable/">Pyodide</a> for allowing me to write the parser in my favorite language</li>
+  </ul>
   <p>© Steven Pak 2022</p>
 </div>
 
