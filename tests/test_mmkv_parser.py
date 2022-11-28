@@ -164,7 +164,7 @@ class TestMMKVParser(unittest.TestCase):
 
 	# Tests for decrypted databases
 	def test_decrypt_one(self):
-		with open('create_data_encrypt', 'rb') as f, open('create_data_encrypt.crc', 'rb') as c:
+		with open('data_encrypt', 'rb') as f, open('data_encrypt.crc', 'rb') as c:
 			mmkv_parser = MMKVParser(mmkv_file_data=f, crc_file_data=c)
 			mmkv_parser.decrypt_and_reconstruct(key=b'kindalongsecretkey'[:16])
 			mmkv_map = mmkv_parser.decode_into_map()

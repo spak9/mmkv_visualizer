@@ -1,6 +1,6 @@
 # mmkv_visualizer Front End
 
-A front end for mmkv_visualizer using Svelete and Vite.
+A front end for mmkv_visualizer using Svelte and Vite.
 
 ## Project setup
 ```
