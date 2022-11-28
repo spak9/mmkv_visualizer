@@ -44,8 +44,6 @@
   function exit() {
   	console.log('[+] Reset props from MMKVCellModal')
   	hidden = true
-  	content = ''
-  	subject = ''
   }
   
 </script>
