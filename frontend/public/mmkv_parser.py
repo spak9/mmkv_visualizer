@@ -288,8 +288,9 @@ class MMKVParser:
                 print('[+] decode_into_map() - cannot parse key length, breaking.')
                 break
             if key_length == 0:
-                print('[+] decode_into_map() - key length is 0, breaking')
-                break
+                print('[+] decode_into_map() - key length is 0, skipping and continuing')
+                self.pos += 1
+                continue
 
             self.pos += bytes_read
 
