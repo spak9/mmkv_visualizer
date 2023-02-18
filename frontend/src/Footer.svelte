@@ -15,7 +15,7 @@
   	<li><a href="https://qwtel.com/">Florian Klampfer</a>, inspiring me with <a href="https://sqliteviewer.app/"><i>SQLite Viewer</i></a></li>
   	<li><a href="https://pyodide.org/en/stable/">Pyodide</a> for allowing me to write the parser in my favorite language</li>
   </ul>
-  <p>© Steven Pak 2022</p>
+  <p>© Steven Pak 2023</p>
 </div>
 
 <!-- Styles -->
