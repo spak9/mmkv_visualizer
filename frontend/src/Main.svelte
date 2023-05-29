@@ -31,7 +31,8 @@
 	// The `MMKVParser` python instance; coupled with data and allows "decode" API
 	let mmkvParser
 
-	// Long string of text representing our `mmkv_parser.py` python code
+	// Long string of text representing our `mmkv_parser.py` python code - needs to be loaded
+	// into the `mmkvParser` object
 	let mmkvParserPythonCode
 
 	// Boolean for the MMKVCellModal
@@ -96,7 +97,7 @@ ${mmkvParserPythonCode}
 ${constructorCode}
 mmkv_parser`
 
-		// Instantiate our MMKVParser instance with ALL the neccesary data - ready to be used!
+		// Instantiate our MMKVParser instance with ALL the necessary data - ready to be used!
 		mmkvParser = pyodide.runPython(pythonCode)
 		mmkvParserStore.set(mmkvParser)
 

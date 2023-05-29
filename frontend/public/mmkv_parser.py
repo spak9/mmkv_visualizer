@@ -426,6 +426,18 @@ class MMKVParser:
             print(f'[+] Could not decode bytes')
             return None
 
+    def decode_as_data(self, value: Union[str, bytes]) -> bytes:
+        """
+        Decodes `value` as NSData/Parcelable.
+        Note: main difference between this and `bytes` is the erroneous length wrapper
+
+        :param value: hexstring for Pyodide-based API or protobuf-encoded NSData/Parcelable value
+        :return: Returns the bytes
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+
+        return value
 
     def decode_as_float(self, value: Union[str, bytes]) -> Optional[float]:
         """
