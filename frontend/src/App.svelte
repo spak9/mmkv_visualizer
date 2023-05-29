@@ -11,9 +11,7 @@
 
 
 <Header/>
-
 <Main/>
-
 <Footer/>
 
 

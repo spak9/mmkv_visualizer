@@ -15,7 +15,8 @@
     'uint64-type', 
     'bytes-type',
     'float-type',
-    'bool-type'
+    'bool-type',
+    'nsdata_parcelable-type'
     ]
 
   let expand_hidden = true  // bool for expanding the MMKVCellModal
@@ -53,6 +54,9 @@
     }
     else if (index % dataTypes.length == 8) {
       return mmkvParser.decode_as_bool(hexstring)
+    }
+    else if (index % dataTypes.length == 9) {
+      return mmkvParser.decode_as_data(hexstring)
     }
   }
 
@@ -111,6 +115,7 @@
   .bytes-type {background-color: #D7FDF0;}
   .float-type {background-color: #B2FFD6;}
   .bool-type {background-color: #CC5803;}
+  .nsdata_parcelable-type {background-color: #A7CAB1;}
   td {
     white-space: nowrap;
   }
