@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import mmkv
+import sys
 
 """
 Small script to create basic test data, in attempt to visual and analyze all the basic 
@@ -186,8 +187,18 @@ def create_data_encrypt():
 if __name__ == "__main__":
 
 
-    # Create our MMKV files inside this `data` directory
-    mmkv.MMKV.initializeMMKV('.')
+    # Create our MMKV files inside whatever directory the user wants
+    # eg. "version_1_2_13"
+    
+    if len(sys.argv) != 2:
+        print('Please enter a directory to pipe the files to.\neg: python create_test_data.py version_1_1\n')
+        sys.exit(1)
+
+    else:
+        dir_name = sys.argv[1]
+        print(f'Creating test data in "{dir_name}"')
+
+    mmkv.MMKV.initializeMMKV(f'{dir_name}')
 
     create_data_all_types()
 

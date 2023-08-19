@@ -1,5 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
 
+# VSCode stuff
+.vscode/
+
 # OS-level stuff
 .DS_Store
 .DS_Store?
