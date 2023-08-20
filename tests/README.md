@@ -5,7 +5,7 @@ I currently offer sample data created by `create_test_data.py`, which creates va
 usage of the API (eg. CRUD operations). This data was created on my M1 Macbook Pro 16" with the `Posix` library.
 The `create_test_data.py` requires a directory name to pipe the created test data. This is mainly for me capturing 
 the evolution of the the MMKV serialization encoding over time (MMKV updates).
-```python
+```bash
 python create_test_data.py version_1_3
 ```
 
