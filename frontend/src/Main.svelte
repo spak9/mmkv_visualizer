@@ -7,6 +7,7 @@
 	import { hex } from './Util.mjs'
 	import MMKVTable from "./MMKVTable.svelte"
 	import MMKVCellModal from "./MMKVCellModal.svelte"
+	import { FileUploaderButton, Button } from 'carbon-components-svelte';
 
 	/**
 	 * State
@@ -227,9 +228,15 @@ mmkv_parser`
 		active = true
 	}
 
+    /**
+     * Event handler function for "change" event for <input type=file>
+     * 
+     * @param e the CustomEvent object in which detail contains the array of Files.
+     */
 	async function onChange(e) {
+        console.log(e.detail);
 		// Perform input validation on the files the user inputs in
-		const [mmkvFile, crcFile] = await inputValidation(e.target.files)
+		const [mmkvFile, crcFile] = await inputValidation(e.detail)
 
 		// If a concrete MMKV file is returned, load it into the MMKVParser, else pop error Modal up
 		if (mmkvFile) {
@@ -244,10 +251,10 @@ mmkv_parser`
 
 <!-- HTML - Flex Child and Container -->
 <div class="page-main" class:highlight={active}
-		on:dragenter={(e) => active = true}
-		on:dragleave={(e) => active = false}
-		on:drop={onDrop} 
-		on:dragover={onDragOver}>
+	on:dragenter={(e) => active = true}
+	on:dragleave={(e) => active = false}
+	on:drop={onDrop} 
+	on:dragover={onDragOver}>
 	{#await setupPyodideAndCode()}
 		<h3>Loading MMKV Parser...</h3>
 	{:then}
@@ -258,10 +265,10 @@ mmkv_parser`
 	  		<p>Drag & drop or select an MMKV file to visualize.<br>
 	  				Encrypted files must be accompanied with their <i>.crc</i> file.</p>
 	    {/if}
-	    <div class="main-buttons">
-	    	<input on:change={onChange} type="file" id="mmkv-input" multiple hidden>
-	      <label for="mmkv-input">Open File</label>
-    		<button><a href='/data_all_types' download>Download Sample Data</a></button>
+		<div class="main-buttons">
+			<FileUploaderButton multiple size="field" kind="tertiary" labelText="Open File(s)" disableLabelChanges={true}
+                on:change={onChange} />
+			<Button size="field" kind="tertiary" href="/data_all_types">Download Sample Data</Button>
 	    </div>
 	  </div>
 
@@ -271,18 +278,16 @@ mmkv_parser`
 	{/await}
 </div>
 
+
 <MMKVCellModal 
 	on:sendAesKey={onSendAesKey}
-  bind:hidden={modalHidden} 
-  bind:content={modalContent} 
-  bind:subject={modalSubject}/>
+    bind:hidden={modalHidden} 
+    bind:content={modalContent} 
+    bind:subject={modalSubject}/>
 
 
 <!-- Styles -->
 <style>
-	button > a {
-		all:  unset;
-	}
 
 	.page-main {
 	  /* Flex Container */
@@ -291,7 +296,7 @@ mmkv_parser`
 	  justify-content: center;
 	  align-items: center;
 	  border-style: dashed;
-	  border-width: 2px;
+	  border-width: 1.5px;
 	  border-radius: 16px;
 	  height: 70%;            /* Used to make sure table doesn't make div taller */
 	  margin: 16px;
@@ -301,32 +306,21 @@ mmkv_parser`
 	}
 
 	.page-main.highlight {
-	  background-color: #E4E6C3;
+        background-color: #E4E6C3;
 	}
 
 	.instructions {
+        width: 50%;
 		text-align: center;
-	  flex: 0 0 auto;
-	  margin: 16px;   
+        flex: 0 0 auto;
+        margin: 16px;   
 	}
 
 	.main-buttons{
-	  display: flex;
-	  flex-wrap: wrap;
-	  justify-content: space-evenly;
+        margin: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
 	}
 
-	.main-buttons > * {
-	  padding: 10px;
-	  background: #ccc;
-	  cursor: pointer;
-	  border-radius: 5px;
-	  border: 1px solid #ccc;
-	  margin: 8px;
-	  font-size: 1em;
-	}
-
-	.main-buttons > *:hover {
-	  background: #ddd;
-	}
 </style>
