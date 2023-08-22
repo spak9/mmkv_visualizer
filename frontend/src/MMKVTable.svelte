@@ -13,7 +13,7 @@
 		<table>
 			<tr>
 				<th id="keys-header">Keys</th>
-				<th id="values-header" colspan="100%">Values</th>
+				<th id="values-header" colspan=100>Values</th>
 			</tr>
 
 			{#each [...mmkvMap] as [stringKey, arrayValue]}

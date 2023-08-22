@@ -7,7 +7,7 @@
 	import { hex } from './Util.mjs'
 	import MMKVTable from "./MMKVTable.svelte"
 	import MMKVCellModal from "./MMKVCellModal.svelte"
-	import { FileUploaderButton, Button } from 'carbon-components-svelte';
+	import { FileUploaderButton, Button, Loading } from 'carbon-components-svelte';
 
 	/**
 	 * State
@@ -257,6 +257,7 @@ mmkv_parser`
 	on:dragover={onDragOver}>
 	{#await setupPyodideAndCode()}
 		<h3>Loading MMKV Parser...</h3>
+        <Loading withOverlay={false} small/>
 	{:then}
 	  <div class="instructions">
 	  	{#if mmkvMap?.size}
