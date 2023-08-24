@@ -257,7 +257,9 @@ mmkv_parser`
 	on:dragover={onDragOver}>
 	{#await setupPyodideAndCode()}
 		<h3>Loading MMKV Parser...</h3>
-        <Loading withOverlay={false} small/>
+		<div class="loading-box">
+			<Loading description="Setting up MMKVParser" withOverlay={false} small/>
+		</div>
 	{:then}
 	  <div class="instructions">
 	  	{#if mmkvMap?.size}
@@ -322,6 +324,9 @@ mmkv_parser`
         display: flex;
         flex-wrap: wrap;
         justify-content: space-evenly;
+	}
+	.loading-box {
+		margin: 16px;
 	}
 
 </style>
