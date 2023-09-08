@@ -328,7 +328,8 @@ class MMKVParser:
 
         return self.decoded_map
 
-    def decode_as_int32(self, value: Union[str, bytes]) -> int:
+    @staticmethod
+    def decode_as_int32(value: Union[str, bytes]) -> int:
         """
         Decodes `value` as a signed 32-bit int.
 
@@ -339,7 +340,8 @@ class MMKVParser:
             value = bytes.fromhex(value)
         return decode_signed_varint(BytesIO(value), mask=32)[0]
 
-    def decode_as_int64(self, value: Union[str, bytes]) -> int:
+    @staticmethod
+    def decode_as_int64(value: Union[str, bytes]) -> int:
         """
         Decodes `value` as a signed 64-bit int.
 
@@ -350,7 +352,8 @@ class MMKVParser:
             value = bytes.fromhex(value)
         return decode_signed_varint(BytesIO(value), mask=64)[0]
 
-    def decode_as_uint32(self, value: Union[str, bytes]) -> int:
+    @staticmethod
+    def decode_as_uint32(value: Union[str, bytes]) -> int:
         """
         Decodes `value` as an unsigned 32-bit int.
 
@@ -361,7 +364,8 @@ class MMKVParser:
             value = bytes.fromhex(value)
         return decode_unsigned_varint(BytesIO(value), mask=32)[0]
 
-    def decode_as_uint64(self, value: Union[str, bytes]) -> int:
+    @staticmethod
+    def decode_as_uint64(value: Union[str, bytes]) -> int:
         """
         Decodes `value` as an unsigned 64-bit int.
 
@@ -372,7 +376,8 @@ class MMKVParser:
             value = bytes.fromhex(value)
         return decode_unsigned_varint(BytesIO(value), mask=64)[0]
 
-    def decode_as_string(self, value: Union[str, bytes]) -> Optional[str]:
+    @staticmethod
+    def decode_as_string(value: Union[str, bytes]) -> Optional[str]:
         """
         Attempts to decodes `value` as a UTF-8 string.
         Note: This assumes that `value` has the "erroneous" varint length wrapper
@@ -395,7 +400,8 @@ class MMKVParser:
             print(f'[+] Could not UTF-8 decode {value!r}')
             return None
 
-    def decode_as_bytes(self, value: Union[str, bytes]) -> Optional[bytes]:
+    @staticmethod
+    def decode_as_bytes(value: Union[str, bytes]) -> Optional[bytes]:
         """
         Decodes `value` as bytes.
         Note: This assumes that `value` has the "erroneous" varint length wrapper
@@ -418,7 +424,8 @@ class MMKVParser:
             print(f'[+] Could not decode bytes')
             return None
 
-    def decode_as_data(self, value: Union[str, bytes]) -> bytes:
+    @staticmethod
+    def decode_as_data(value: Union[str, bytes]) -> bytes:
         """
         Decodes `value` as NSData/Parcelable.
         Note: main difference between this and `bytes` is the erroneous length wrapper
@@ -431,7 +438,8 @@ class MMKVParser:
 
         return value
 
-    def decode_as_float(self, value: Union[str, bytes]) -> Optional[float]:
+    @staticmethod
+    def decode_as_float(value: Union[str, bytes]) -> Optional[float]:
         """
         Decodes `value` as a double (8-bytes), which is a float type in Python.
 
@@ -447,7 +455,8 @@ class MMKVParser:
 
         return struct.unpack('<d', value)[0]
 
-    def decode_as_bool(self, value: Union[str, bytes]) -> Optional[bool]:
+    @staticmethod
+    def decode_as_bool(value: Union[str, bytes]) -> Optional[bool]:
         """
         Attempts to decode `value` as a boolean.
 
