@@ -32,6 +32,14 @@ html, body {
   color: #ccc;
   border: #ccc solid 1px;
   background:#fff;
+} 
+.carbon-icons {
+  transition: all 250ms ease;
+  cursor: pointer; 
+  vertical-align: bottom;
+}
+.carbon-icons:hover {
+  color: #ccc;
 }
 
 table {
@@ -47,7 +55,7 @@ table {
 td, th {
   border: 1px solid rgb(190,190,190) !important;
   padding: 10px 16px !important;
-  cursor: pointer !important;
+
 }
 
 th {

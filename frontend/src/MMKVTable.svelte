@@ -15,14 +15,13 @@
 				<th id="keys-header">Keys</th>
 				<th id="values-header" colspan="100%">Values</th>
 			</tr>
-
 			{#each [...mmkvMap] as [stringKey, arrayValue]}
 				<tr>
 					<td>{stringKey}</td>
-
 					{#each arrayValue as value}
 						<MMKVCell hexstring={hex(value)}/>
 					{/each}
+        </tr>
 			{/each}
 		</table>
 	</div>
@@ -33,7 +32,7 @@
 <style>
 	.table-wrapper {
 	  flex: 1 1 80%;
-	  width:  100%;
+    width: 100%;
 	  overflow: auto;
 	  padding: 16px; 
 	}

@@ -130,17 +130,21 @@ mmkv_parser`
 		modalContent = ''
 		modalSubject = 'Error'
 
-		// Check number of files passed in
+		// No Files passed in
 		if (!dataFiles) {
 			console.log("[+] User did not input any files")
 			modalContent = 'User did not input any files'
 		}
+
+    // 3 or more files passed in
 		else if (dataFiles.length > 2) {
 			console.log(`[+] User inputted ${dataFiles.length} files`)
 			modalContent  = `User inputted ${dataFiles.length} files. Please input either
 											 the MMKV file alone, or both the MMKV file and the accompanying
 											 .crc file.`
 		}
+
+    // 1 file passed in
 		else if (dataFiles.length == 1) {
 			// MMKV File
 			console.log('[+] User passed in 1 file')
@@ -154,6 +158,8 @@ mmkv_parser`
 				mmkvFile = null
 			}
 		}
+
+    // 2 files passed in
 		else if (dataFiles.length == 2) {
 			// MMKV file and CRC file
 			console.log('[+] User passed in 2 files')
@@ -175,7 +181,7 @@ mmkv_parser`
 			if (!crcFile) {
 				console.log("[+] User passed in 2 files, but 1 is not .crc")
 				modalContent = `User passed in 2 files, but 1 is not a .crc file. 
-												Please pass in either the MMKV file alone, or both files including the accompanying .crc file.`
+												Please pass in either the MMKV file alone, or both the MMKV file and the accompanying .crc file.`
 				mmkvFile = null
 				crcFile = null
 			}
@@ -234,7 +240,7 @@ mmkv_parser`
      * @param e the CustomEvent object in which detail contains the array of Files.
      */
 	async function onChange(e) {
-        console.log(e.detail);
+    console.log(e.detail);
 		// Perform input validation on the files the user inputs in
 		const [mmkvFile, crcFile] = await inputValidation(e.detail)
 
@@ -266,11 +272,11 @@ mmkv_parser`
 	  		<p>Parsing "{mmkvFileName}" File</p>
 	  	{:else} 
 	  		<p>Drag & drop or select an MMKV file to visualize.<br>
-	  				Encrypted files must be accompanied with their <i>.crc</i> file.</p>
+          Encrypted files must be accompanied with their <i>.crc</i> file.</p>
 	    {/if}
 		<div class="main-buttons">
 			<FileUploaderButton multiple size="field" kind="tertiary" labelText="Open File(s)" disableLabelChanges={true}
-                on:change={onChange} />
+        on:change={onChange} />
 			<Button size="field" kind="tertiary" href="/data_all_types">Download Sample Data</Button>
 	    </div>
 	  </div>
@@ -309,21 +315,21 @@ mmkv_parser`
 	}
 
 	.page-main.highlight {
-        background-color: #E4E6C3;
+    background-color: #E4E6C3;
 	}
 
 	.instructions {
-        width: 50%;
+    width: 50%;
 		text-align: center;
-        flex: 0 0 auto;
-        margin: 16px;   
+    flex: 0 0 auto;
+    margin: 16px;   
 	}
 
 	.main-buttons{
-        margin: 16px;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-evenly;
+    margin: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 	}
 	.loading-box {
 		margin: 16px;
