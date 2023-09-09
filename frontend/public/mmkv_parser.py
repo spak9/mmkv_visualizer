@@ -386,7 +386,6 @@ class MMKVParser:
         :return: Returns the UTF-8 decoded string, or None if not possible
         """
         if isinstance(value, str):
-            print(value)
             value = bytes.fromhex(value)
 
         # Strip off the varint length delimiter bytes
