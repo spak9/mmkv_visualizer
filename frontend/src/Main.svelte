@@ -297,7 +297,6 @@ mmkv_parser`
 
 <!-- Styles -->
 <style>
-
 	.page-main {
 	  /* Flex Container */
 	  display: flex;

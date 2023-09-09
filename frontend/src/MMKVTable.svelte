@@ -12,7 +12,7 @@
 	<div class="table-wrapper">
 		<table>
 			<tr>
-				<th id="keys-header">Keys</th>
+				<th id="keys-header">Key</th>
 				<th id="values-header" colspan="100%">Values</th>
 			</tr>
 			{#each [...mmkvMap] as [stringKey, arrayValue]}

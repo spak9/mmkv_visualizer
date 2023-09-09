@@ -87,12 +87,8 @@
 <td class={dataType} on:click={() => dataTypeIndex += 1}>
   <span class="data-type">({dataType.split('-')[0]})</span>
   <span class="data">{interpretHexData(dataTypeIndex)}</span>
-  <span on:click={copyContent}>
-    <Copy class="carbon-icons"/>
-  </span>
-  <span on:click={expandContent}>
-    <FitToHeight class="carbon-icons" />
-  </span>
+  <span on:click={copyContent}><Copy class="carbon-icons"/></span>
+  <span on:click={expandContent}><FitToHeight class="carbon-icons" /></span>
 </td>
 
 <MMKVCellModal 
@@ -113,6 +109,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
+    margin-right: 4px;
   }
   .data-type {color: rgba(0, 0, 0, 0.5);}
   .hexstring-type {}

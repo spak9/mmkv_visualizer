@@ -1,4 +1,5 @@
 <script>
+    import { Copy } from 'carbon-icons-svelte';
 
 	/**
 	 * Imports
@@ -52,7 +53,9 @@
 <!-- HTML -->
 <div class="modal" class:hidden={hidden}>
 	<span class="subject">{subject}</span>
-	<span class="material-icons md-18" on:click={copyContent}>content_copy</span>
+  <span on:click={copyContent}>
+    <Copy class="carbon-icons"/>
+  </span>
 	<hr>
 	<span>{content}</span>
 
@@ -83,6 +86,7 @@
   	right: 20%;
   	z-index: 2;
   	overflow-y: auto;
+    overflow-wrap: break-word;
 	}
 	.overlay {
 	  position: fixed;
