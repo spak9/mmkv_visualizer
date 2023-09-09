@@ -14,6 +14,8 @@
   <ul>
   	<li><a href="https://qwtel.com/">Florian Klampfer</a>, inspiring me with <a href="https://sqliteviewer.app/"><i>SQLite Viewer</i></a></li>
   	<li><a href="https://pyodide.org/en/stable/">Pyodide</a> for allowing me to write the parser in my favorite language</li>
+		<li><a href="https://carbon-components-svelte.onrender.com/">Carbon Components Svelte</a> for the beautiful UI components</li>
+		<li>KW & Company for helping me test this application</li>
   </ul>
   <p class="copyright">© Steven Pak 2023</p>
 </div>

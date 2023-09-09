@@ -2,8 +2,6 @@
   box-sizing: border-box;
 }
 html, body {
-  color: black;
-  background-color: #f7f7f2;
   height: 100%;
 }
 #app {

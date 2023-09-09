@@ -86,7 +86,7 @@
 <!-- HTML -->
 <td class={dataType} on:click={() => dataTypeIndex += 1}>
   <span class="data-type">({dataType.split('-')[0]})</span>
-  <span class="data">{interpretHexData(dataTypeIndex)}</span>
+  <span class="data">{interpretHexData(dataTypeIndex) || "N/A"}</span>
   <span on:click={copyContent}><Copy class="carbon-icons"/></span>
   <span on:click={expandContent}><FitToHeight class="carbon-icons" /></span>
 </td>
@@ -101,6 +101,7 @@
 <style>
   td {
     cursor: pointer;
+    white-space: nowrap;
   }
   .data {
     display: inline-block;
@@ -122,7 +123,4 @@
   .float-type {background-color: #B2FFD6;}
   .bool-type {background-color: #CC5803;}
   .nsdata_parcelable-type {background-color: #A7CAB1;}
-  td {
-    white-space: nowrap;
-  }
 </style>
