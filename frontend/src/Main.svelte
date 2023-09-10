@@ -8,6 +8,7 @@
 	import MMKVTable from "./MMKVTable.svelte"
 	import MMKVCellModal from "./MMKVCellModal.svelte"
 	import { FileUploaderButton, Button, Loading } from 'carbon-components-svelte';
+	import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte";
 
 	/**
 	 * State
@@ -17,33 +18,39 @@
 	let active = false				
 
 	// The Pyodide Interface for running python code - singleton
-	let pyodide
+	let pyodide = undefined;
 
 	// A native JavaScript "Map[string, Array[UInt8Array]]" map that will hold
 	// the result of decoding the MMKV File via `mmkv_parser.py`
-	let mmkvMap
+	let mmkvMap = undefined;
 
 	// A string filename of the mmkv file user passes in
-	let mmkvFileName
+	let mmkvFileName = undefined;
 
 	// A string filename of the crc file user passes in
-	let crcFileName
+	let crcFileName = undefined;
 
 	// The `MMKVParser` python instance; coupled with data and allows "decode" API
-	let mmkvParser
+	let mmkvParser = undefined;
 
 	// Long string of text representing our `mmkv_parser.py` python code - needs to be loaded
 	// into the `mmkvParser` object
-	let mmkvParserPythonCode
+	let mmkvParserPythonCode = undefined;
 
 	// Boolean for the MMKVCellModal
-	let modalHidden = true
+	let modalHidden = true;
 
 	// String content that will be presented on the MMKVCellModal
-	let modalContent = ''
+	let modalContent = '';
 
 	// String subject that will be presented on the MMKVCellModal
-	let modalSubject = ''
+	let modalSubject = '';
+
+	// String for the AES key in hex
+	let aesKey = undefined;
+
+	// String for the iV in hex
+	let iv = undefined;
 
 
 	/**
@@ -69,12 +76,12 @@
 		mmkvMap = undefined
 		mmkvFileName = mmkvFile.name
 		crcFileName = crcFile?.name
+		iv = undefined
 
 		let mmkvHexString = undefined
 		let crcHexString = undefined
 		let isEncrypted = undefined
 		let constructorCode = undefined
-		let iv = undefined
 
 		// Convert File(s) data into a hexstring(s), preparing the `mmkvParser` decoding 
 		mmkvHexString = hex(await mmkvFile.arrayBuffer())
@@ -196,19 +203,20 @@ mmkv_parser`
 	// Will pop up the modal if there is a Pyodide "PythonError".
 	function onSendAesKey(e) {
 		console.log('[+] User inputted hexstring key -- attempt decryption with hexstring key')
-		let key = e.detail.aesKey
+		aesKey = e.detail.aesKey
 		try {
-			mmkvParser.decrypt_and_reconstruct(e.detail.aesKey)
+			mmkvParser.decrypt_and_reconstruct(aesKey)
 			mmkvMap = mmkvParser.decode_into_map().toJs()
 			modalHidden = true
 		}
 		catch (err) {
 			modalSubject = 'Error'
-			modalContent = `The following AES key "${key}" did not work. Is it a hexstring?`
+			modalContent = `The following AES key "${aesKey}" did not work. Is it a hexstring?`
 			modalHidden = false
 		}	
 	}
 
+	// A callback when the user drops a file(s) on the dropzone
 	async function onDrop(e) {
 		e.preventDefault()
 
@@ -234,11 +242,11 @@ mmkv_parser`
 		active = true
 	}
 
-    /**
-     * Event handler function for "change" event for <input type=file>
-     * 
-     * @param e the CustomEvent object in which detail contains the array of Files.
-     */
+	/**
+	 * Event handler function for "change" event for <input type=file>
+	 * 
+	 * @param e the CustomEvent object in which detail contains the array of Files.
+	 */
 	async function onChange(e) {
     console.log(e.detail);
 		// Perform input validation on the files the user inputs in
@@ -251,6 +259,25 @@ mmkv_parser`
 		else {
 			modalHidden = false
 		}
+	}
+	
+	/**
+	 * Event handler when the user clicks on the OverflowMenuItem for "View metadata"
+	 * 
+	 * @param e PointerEvent object
+	 */
+	function viewMetadata(e) {
+		console.log("[+] viewMetadata")
+
+		// Update modal content display metadata regarding the decoding 
+		let db_size = mmkvParser._get_db_size() ?? "0 - using best effort parsing!";
+		modalSubject = 'MMKV Metadata';
+		modalContent = `MMKV Filename: ${mmkvFileName}\n \
+										MMKV Database Size: ${db_size}\n \
+										CRC Filename: ${crcFileName ?? "N/A"}\n \
+										AES Key (hex): ${aesKey ?? "N/A"}\n \
+										IV (hex): ${iv ?? "N/A"}`;
+		modalHidden = false;
 	}
 </script>
 
@@ -268,19 +295,22 @@ mmkv_parser`
 		</div>
 	{:then}
 	  <div class="instructions">
-	  	{#if mmkvMap?.size}
-	  		<p>Parsing "{mmkvFileName}" File</p>
-	  	{:else} 
+	  	{#if mmkvMap?.size === undefined} 
 	  		<p>Drag & drop or select an MMKV file to visualize.<br>
           Encrypted files must be accompanied with their <i>.crc</i> file.</p>
 	    {/if}
-		<div class="main-buttons">
-			<FileUploaderButton multiple size="field" kind="tertiary" labelText="Open File(s)" disableLabelChanges={true}
-        on:change={onChange} />
-			<Button size="field" kind="tertiary" href="/data_all_types">Download Sample Data</Button>
+			<div class="main-buttons">
+				<FileUploaderButton multiple size="field" kind="tertiary" labelText="Open File(s)" disableLabelChanges={true}
+					on:change={onChange} />
+				<Button size="field" kind="tertiary" href="/data_all_types">Download Sample Data</Button>
+				{#if mmkvMap}
+					<OverflowMenu>
+						<OverflowMenuItem text="View metadata" on:click={viewMetadata}/>
+						<OverflowMenuItem text="Export schema"/>
+					</OverflowMenu>
+				{/if}
 	    </div>
 	  </div>
-
 	  {#if mmkvMap?.size} 
 	  	<MMKVTable mmkvMap={mmkvMap}/>
 	  {/if}
@@ -290,9 +320,9 @@ mmkv_parser`
 
 <MMKVCellModal 
 	on:sendAesKey={onSendAesKey}
-    bind:hidden={modalHidden} 
-    bind:content={modalContent} 
-    bind:subject={modalSubject}/>
+	bind:hidden={modalHidden} 
+	bind:content={modalContent} 
+	bind:subject={modalSubject}/>
 
 
 <!-- Styles -->

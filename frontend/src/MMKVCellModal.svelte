@@ -51,7 +51,7 @@
 
 
 <!-- HTML -->
-<div class="modal" class:hidden={hidden}>
+<div class="modal" class:hidden>
 	<span class="subject">{subject}</span>
   <span on:click={copyContent}>
     <Copy class="carbon-icons"/>
@@ -68,7 +68,7 @@
 	{/if}
 </div>
 
-<div class="overlay" class:hidden={hidden} on:click={exit}></div>
+<div class="overlay" class:hidden on:click={exit}></div>
 
 
 <!-- Styling -->
