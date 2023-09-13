@@ -7,6 +7,8 @@
 	import { hex } from './Util.mjs'
 	import MMKVTable from "./MMKVTable.svelte"
 	import MMKVCellModal from "./MMKVCellModal.svelte"
+	import { FileUploaderButton, Button, Loading } from 'carbon-components-svelte';
+	import { OverflowMenu, OverflowMenuItem } from "carbon-components-svelte";
 
 	/**
 	 * State
@@ -16,33 +18,42 @@
 	let active = false				
 
 	// The Pyodide Interface for running python code - singleton
-	let pyodide
+	let pyodide = undefined;
 
 	// A native JavaScript "Map[string, Array[UInt8Array]]" map that will hold
 	// the result of decoding the MMKV File via `mmkv_parser.py`
-	let mmkvMap
+	let mmkvMap = undefined;
+
+	// An instance of the "MMKVTable" svelte component
+	let mmkvTable = undefined;
 
 	// A string filename of the mmkv file user passes in
-	let mmkvFileName
+	let mmkvFileName = undefined;
 
 	// A string filename of the crc file user passes in
-	let crcFileName
+	let crcFileName = undefined;
 
 	// The `MMKVParser` python instance; coupled with data and allows "decode" API
-	let mmkvParser
+	let mmkvParser = undefined;
 
 	// Long string of text representing our `mmkv_parser.py` python code - needs to be loaded
 	// into the `mmkvParser` object
-	let mmkvParserPythonCode
+	let mmkvParserPythonCode = undefined;
 
 	// Boolean for the MMKVCellModal
-	let modalHidden = true
+	let modalHidden = true;
 
 	// String content that will be presented on the MMKVCellModal
-	let modalContent = ''
+	let modalContent = '';
 
 	// String subject that will be presented on the MMKVCellModal
-	let modalSubject = ''
+	let modalSubject = '';
+
+	// String for the AES key in hex
+	let aesKey = undefined;
+
+	// String for the iV in hex
+	let iv = undefined;
 
 
 	/**
@@ -68,12 +79,12 @@
 		mmkvMap = undefined
 		mmkvFileName = mmkvFile.name
 		crcFileName = crcFile?.name
+		iv = undefined
 
 		let mmkvHexString = undefined
 		let crcHexString = undefined
 		let isEncrypted = undefined
 		let constructorCode = undefined
-		let iv = undefined
 
 		// Convert File(s) data into a hexstring(s), preparing the `mmkvParser` decoding 
 		mmkvHexString = hex(await mmkvFile.arrayBuffer())
@@ -129,17 +140,21 @@ mmkv_parser`
 		modalContent = ''
 		modalSubject = 'Error'
 
-		// Check number of files passed in
+		// No Files passed in
 		if (!dataFiles) {
 			console.log("[+] User did not input any files")
 			modalContent = 'User did not input any files'
 		}
+
+    // 3 or more files passed in
 		else if (dataFiles.length > 2) {
 			console.log(`[+] User inputted ${dataFiles.length} files`)
 			modalContent  = `User inputted ${dataFiles.length} files. Please input either
 											 the MMKV file alone, or both the MMKV file and the accompanying
 											 .crc file.`
 		}
+
+    // 1 file passed in
 		else if (dataFiles.length == 1) {
 			// MMKV File
 			console.log('[+] User passed in 1 file')
@@ -153,6 +168,8 @@ mmkv_parser`
 				mmkvFile = null
 			}
 		}
+
+    // 2 files passed in
 		else if (dataFiles.length == 2) {
 			// MMKV file and CRC file
 			console.log('[+] User passed in 2 files')
@@ -174,7 +191,7 @@ mmkv_parser`
 			if (!crcFile) {
 				console.log("[+] User passed in 2 files, but 1 is not .crc")
 				modalContent = `User passed in 2 files, but 1 is not a .crc file. 
-												Please pass in either the MMKV file alone, or both files including the accompanying .crc file.`
+												Please pass in either the MMKV file alone, or both the MMKV file and the accompanying .crc file.`
 				mmkvFile = null
 				crcFile = null
 			}
@@ -189,19 +206,20 @@ mmkv_parser`
 	// Will pop up the modal if there is a Pyodide "PythonError".
 	function onSendAesKey(e) {
 		console.log('[+] User inputted hexstring key -- attempt decryption with hexstring key')
-		let key = e.detail.aesKey
+		aesKey = e.detail.aesKey
 		try {
-			mmkvParser.decrypt_and_reconstruct(e.detail.aesKey)
+			mmkvParser.decrypt_and_reconstruct(aesKey)
 			mmkvMap = mmkvParser.decode_into_map().toJs()
 			modalHidden = true
 		}
 		catch (err) {
 			modalSubject = 'Error'
-			modalContent = `The following AES key "${key}" did not work. Is it a hexstring?`
+			modalContent = `The following AES key "${aesKey}" did not work. Is it a hexstring?`
 			modalHidden = false
 		}	
 	}
 
+	// A callback when the user drops a file(s) on the dropzone
 	async function onDrop(e) {
 		e.preventDefault()
 
@@ -227,9 +245,15 @@ mmkv_parser`
 		active = true
 	}
 
+	/**
+	 * Event handler function for "change" event for <input type=file>
+	 * 
+	 * @param e the CustomEvent object in which detail contains the array of Files.
+	 */
 	async function onChange(e) {
+    console.log(e.detail);
 		// Perform input validation on the files the user inputs in
-		const [mmkvFile, crcFile] = await inputValidation(e.target.files)
+		const [mmkvFile, crcFile] = await inputValidation(e.detail)
 
 		// If a concrete MMKV file is returned, load it into the MMKVParser, else pop error Modal up
 		if (mmkvFile) {
@@ -239,51 +263,86 @@ mmkv_parser`
 			modalHidden = false
 		}
 	}
+	
+	/**
+	 * Event handler when the user clicks on the OverflowMenuItem for "View metadata"
+	 * 
+	 * @param e PointerEvent object
+	 */
+	function viewMetadata(e) {
+		console.log("[+] viewMetadata")
+
+		// Update modal content display metadata regarding the decoding 
+		let db_size = mmkvParser._get_db_size() ?? "0 - using best effort parsing!";
+		modalSubject = 'MMKV Metadata';
+		modalContent = `MMKV Filename: ${mmkvFileName}\n \
+										MMKV Database Size: ${db_size}\n \
+										CRC Filename: ${crcFileName ?? "N/A"}\n \
+										AES Key (hex): ${aesKey ?? "N/A"}\n \
+										IV (hex): ${iv ?? "N/A"}`;
+		modalHidden = false;
+	}
+
+	/**
+	 * Event handler when the user clicks on the OverflowMenuItem for "View schema"
+	 * @param e
+	 */
+	function viewSchema(e) {
+		console.log("[+] viewSchema");
+
+		// Update modal content to display the schema
+		modalSubject = 'MMKV User-defined Python Schema';
+		modalContent = mmkvTable.getSchema();
+		modalHidden = false;
+	}
 </script>
 
 
 <!-- HTML - Flex Child and Container -->
 <div class="page-main" class:highlight={active}
-		on:dragenter={(e) => active = true}
-		on:dragleave={(e) => active = false}
-		on:drop={onDrop} 
-		on:dragover={onDragOver}>
+	on:dragenter={(e) => active = true}
+	on:dragleave={(e) => active = false}
+	on:drop={onDrop} 
+	on:dragover={onDragOver}>
 	{#await setupPyodideAndCode()}
 		<h3>Loading MMKV Parser...</h3>
+		<div class="loading-box">
+			<Loading description="Setting up MMKVParser" withOverlay={false} small/>
+		</div>
 	{:then}
 	  <div class="instructions">
-	  	{#if mmkvMap?.size}
-	  		<p>Parsing "{mmkvFileName}" File</p>
-	  	{:else} 
+	  	{#if mmkvMap?.size === undefined} 
 	  		<p>Drag & drop or select an MMKV file to visualize.<br>
-	  				Encrypted files must be accompanied with their <i>.crc</i> file.</p>
+          Encrypted files must be accompanied with their <i>.crc</i> file.</p>
 	    {/if}
-	    <div class="main-buttons">
-	    	<input on:change={onChange} type="file" id="mmkv-input" multiple hidden>
-	      <label for="mmkv-input">Open File</label>
-    		<button><a href='/data_all_types' download>Download Sample Data</a></button>
+			<div class="main-buttons">
+				<FileUploaderButton multiple size="field" kind="tertiary" labelText="Open File(s)" disableLabelChanges={true}
+					on:change={onChange} />
+				<Button size="field" kind="tertiary" href="/data_all_types">Download Sample Data</Button>
+				{#if mmkvMap}
+					<OverflowMenu>
+						<OverflowMenuItem text="View metadata" on:click={viewMetadata}/>
+						<OverflowMenuItem text="View schema" on:click={viewSchema}/>
+					</OverflowMenu>
+				{/if}
 	    </div>
 	  </div>
-
 	  {#if mmkvMap?.size} 
-	  	<MMKVTable mmkvMap={mmkvMap}/>
+	  	<MMKVTable mmkvMap={mmkvMap} bind:this={mmkvTable}/>
 	  {/if}
 	{/await}
 </div>
 
+
 <MMKVCellModal 
 	on:sendAesKey={onSendAesKey}
-  bind:hidden={modalHidden} 
-  bind:content={modalContent} 
-  bind:subject={modalSubject}/>
+	bind:hidden={modalHidden} 
+	bind:content={modalContent} 
+	bind:subject={modalSubject}/>
 
 
 <!-- Styles -->
 <style>
-	button > a {
-		all:  unset;
-	}
-
 	.page-main {
 	  /* Flex Container */
 	  display: flex;
@@ -291,7 +350,7 @@ mmkv_parser`
 	  justify-content: center;
 	  align-items: center;
 	  border-style: dashed;
-	  border-width: 2px;
+	  border-width: 1.5px;
 	  border-radius: 16px;
 	  height: 70%;            /* Used to make sure table doesn't make div taller */
 	  margin: 16px;
@@ -301,32 +360,24 @@ mmkv_parser`
 	}
 
 	.page-main.highlight {
-	  background-color: #E4E6C3;
+    background-color: #E4E6C3;
 	}
 
 	.instructions {
+    width: 50%;
 		text-align: center;
-	  flex: 0 0 auto;
-	  margin: 16px;   
+    flex: 0 0 auto;
+    margin: 16px;   
 	}
 
 	.main-buttons{
-	  display: flex;
-	  flex-wrap: wrap;
-	  justify-content: space-evenly;
+    margin: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+	}
+	.loading-box {
+		margin: 16px;
 	}
 
-	.main-buttons > * {
-	  padding: 10px;
-	  background: #ccc;
-	  cursor: pointer;
-	  border-radius: 5px;
-	  border: 1px solid #ccc;
-	  margin: 8px;
-	  font-size: 1em;
-	}
-
-	.main-buttons > *:hover {
-	  background: #ddd;
-	}
 </style>

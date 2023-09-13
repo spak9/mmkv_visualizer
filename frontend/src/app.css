@@ -2,8 +2,6 @@
   box-sizing: border-box;
 }
 html, body {
-  color: black;
-  background-color: #f7f7f2;
   height: 100%;
 }
 #app {
@@ -32,31 +30,38 @@ html, body {
   color: #ccc;
   border: #ccc solid 1px;
   background:#fff;
+} 
+.carbon-icons {
+  transition: all 250ms ease;
+  cursor: pointer; 
+  vertical-align: bottom;
+}
+.carbon-icons:hover {
+  color: #ccc;
 }
 
-
 table {
-  border-collapse: collapse;
-  border: 2px solid rgb(200,200,200);
-  letter-spacing: 1px;
-  font-size: 0.8rem;
-  empty-cells: hide;
-  align-self: flex-start;
-  width: 100%;
+  border-collapse: collapse !important;
+  border: 2px solid rgb(200,200,200) !important;
+  letter-spacing: 1px !important;
+  font-size: 0.8rem !important;
+  empty-cells: hide !important;
+  align-self: flex-start !important;
+  width: 100% !important;
 }
 
 td, th {
-  border: 1px solid rgb(190,190,190);
-  padding: 10px 16px;
-  cursor: pointer; 
+  border: 1px solid rgb(190,190,190) !important;
+  padding: 10px 16px !important;
+
 }
 
 th {
-  background-color: rgb(235,235,235);
+  background-color: rgb(235,235,235) !important;
 }
 
 td {
-  text-align: left;
+  text-align: left !important;
 }
 
 tr:nth-child(even) td {

@@ -3,6 +3,8 @@
   import MMKVCellModal from './MMKVCellModal.svelte'
   import { mmkvParserStore } from './MMKVParserStore.mjs'
   import { get } from 'svelte/store'
+  import Copy from "carbon-icons-svelte/lib/Copy.svelte";
+  import FitToHeight from "carbon-icons-svelte/lib/FitToHeight.svelte";
 
 	export let hexstring 		// Hex string representing the data 
 
@@ -21,12 +23,10 @@
 
   let expand_hidden = true  // bool for expanding the MMKVCellModal
 	let dataTypeIndex	= 0		  // data type index for rotating on click 
-  let dataType = dataTypes[dataTypeIndex]
   $: dataType = dataTypes[dataTypeIndex % dataTypes.length]
 
   function interpretHexData(index) {
     let mmkvParser = get(mmkvParserStore)
-    // dataType = dataTypes[index % dataTypes.length]
     console.log(dataType)
     if (index % dataTypes.length == 0) {
       return hexstring
@@ -78,15 +78,24 @@
     console.log('[+] Expand Content')
     expand_hidden = false
   }
+
+  /**
+   * A public method on "MMKVCell" that returns the current datatype this cell is being
+   * interpreted as.
+   * See "dataTypes" constant for all possible values.
+   */
+  export function getDataType() {
+    return dataType;
+  }
 </script>
 
 
 <!-- HTML -->
 <td class={dataType} on:click={() => dataTypeIndex += 1}>
   <span class="data-type">({dataType.split('-')[0]})</span>
-  <span class="data">{interpretHexData(dataTypeIndex)}</span>
-  <span class="material-icons md-18" on:click={expandContent}>expand</span>
-  <span class="material-icons md-18" on:click={copyContent}>content_copy</span>
+  <span class="data">{interpretHexData(dataTypeIndex) || "N/A"}</span>
+  <span on:click={copyContent}><Copy class="carbon-icons"/></span>
+  <span on:click={expandContent}><FitToHeight class="carbon-icons" /></span>
 </td>
 
 <MMKVCellModal 
@@ -97,6 +106,10 @@
 
 <!-- Styles -->
 <style>
+  td {
+    cursor: pointer;
+    white-space: nowrap;
+  }
   .data {
     display: inline-block;
     max-width: 400px;
@@ -104,6 +117,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: middle;
+    margin-right: 4px;
   }
   .data-type {color: rgba(0, 0, 0, 0.5);}
   .hexstring-type {}
@@ -116,7 +130,4 @@
   .float-type {background-color: #B2FFD6;}
   .bool-type {background-color: #CC5803;}
   .nsdata_parcelable-type {background-color: #A7CAB1;}
-  td {
-    white-space: nowrap;
-  }
 </style>

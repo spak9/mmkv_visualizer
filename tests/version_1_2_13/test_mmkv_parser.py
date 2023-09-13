@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-sys.path.append('../frontend/public')  # Used for the `src` relative import
+sys.path.append('../../frontend/public')  # Used for the `src` relative import
 
 from io import BytesIO
 from collections import defaultdict
