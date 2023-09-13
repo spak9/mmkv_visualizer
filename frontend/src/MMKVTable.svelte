@@ -4,6 +4,26 @@
 	import MMKVCell from './MMKVCell.svelte'
 	export let mmkvMap				// Native JavaScript Map of "Map[str, Array[UInt8Array]]"
 
+	// Internal mapping of the key-value pair data interpretation of only the FIRST of all the values.
+	// eg: {"my_key": "string", "userid": "uint32"}
+	let recentCellMapping = {};
+	for (const key in mmkvMap) {
+		recentCellMapping[key] = undefined;
+	}
+
+	export function getSchema() {
+		let schema = {};
+		for (const key in recentCellMapping) {
+			// Only populate non default "hexstring-type"
+			if (recentCellMapping[key].getDataType() != 'hexstring-type') {
+				// Get the type without the "-type"
+				// eg. 'string-type' --> 'string'
+				schema[key] = recentCellMapping[key].getDataType().slice(0, -5);
+			}
+		}
+		return JSON.stringify(schema, null, '\t');
+	}
+
 </script>
 
 
@@ -18,8 +38,13 @@
 			{#each [...mmkvMap] as [stringKey, arrayValue]}
 				<tr>
 					<td>{stringKey}</td>
-					{#each arrayValue as value}
-						<MMKVCell hexstring={hex(value)}/>
+					<!-- Create MMKVCell per forensic value, 0th being most recent -->
+					{#each arrayValue as value, i}
+						{#if i === 0}
+							<MMKVCell hexstring={hex(value)} bind:this={recentCellMapping[stringKey]}/>
+						{:else}
+							<MMKVCell hexstring={hex(value)}/>
+						{/if}
 					{/each}
         </tr>
 			{/each}

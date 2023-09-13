@@ -103,5 +103,8 @@
 	.hidden {
 		display: none;
 	}
-	.subject {color: rgba(0, 0, 0, 0.5);}
+	.subject {
+		margin-right: 8px;
+		color: rgba(0, 0, 0, 0.5);
+	}
 </style>

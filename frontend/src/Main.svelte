@@ -24,6 +24,9 @@
 	// the result of decoding the MMKV File via `mmkv_parser.py`
 	let mmkvMap = undefined;
 
+	// An instance of the "MMKVTable" svelte component
+	let mmkvTable = undefined;
+
 	// A string filename of the mmkv file user passes in
 	let mmkvFileName = undefined;
 
@@ -279,6 +282,19 @@ mmkv_parser`
 										IV (hex): ${iv ?? "N/A"}`;
 		modalHidden = false;
 	}
+
+	/**
+	 * Event handler when the user clicks on the OverflowMenuItem for "View schema"
+	 * @param e
+	 */
+	function viewSchema(e) {
+		console.log("[+] viewSchema");
+
+		// Update modal content to display the schema
+		modalSubject = 'MMKV User-defined Python Schema';
+		modalContent = mmkvTable.getSchema();
+		modalHidden = false;
+	}
 </script>
 
 
@@ -306,13 +322,13 @@ mmkv_parser`
 				{#if mmkvMap}
 					<OverflowMenu>
 						<OverflowMenuItem text="View metadata" on:click={viewMetadata}/>
-						<OverflowMenuItem text="Export schema"/>
+						<OverflowMenuItem text="View schema" on:click={viewSchema}/>
 					</OverflowMenu>
 				{/if}
 	    </div>
 	  </div>
 	  {#if mmkvMap?.size} 
-	  	<MMKVTable mmkvMap={mmkvMap}/>
+	  	<MMKVTable mmkvMap={mmkvMap} bind:this={mmkvTable}/>
 	  {/if}
 	{/await}
 </div>

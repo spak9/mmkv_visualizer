@@ -23,12 +23,10 @@
 
   let expand_hidden = true  // bool for expanding the MMKVCellModal
 	let dataTypeIndex	= 0		  // data type index for rotating on click 
-  let dataType = dataTypes[dataTypeIndex]
   $: dataType = dataTypes[dataTypeIndex % dataTypes.length]
 
   function interpretHexData(index) {
     let mmkvParser = get(mmkvParserStore)
-    // dataType = dataTypes[index % dataTypes.length]
     console.log(dataType)
     if (index % dataTypes.length == 0) {
       return hexstring
@@ -79,6 +77,15 @@
     e.stopPropagation()
     console.log('[+] Expand Content')
     expand_hidden = false
+  }
+
+  /**
+   * A public method on "MMKVCell" that returns the current datatype this cell is being
+   * interpreted as.
+   * See "dataTypes" constant for all possible values.
+   */
+  export function getDataType() {
+    return dataType;
   }
 </script>
 
