@@ -9,6 +9,7 @@
   	<li>Visualize the most recent key-value pairs, as well as older logged values not available via the native API.</li>
   	<li>Interpret the values in all possible ways, including strings, bytes, ints, floats, and NSCoding.</li>
   	<li>Decrypt MMKV files with the associated <i>.crc</i> file and an AES key</li>
+		<li>Experiment with data and build up your own defined schema</li>
   </ul>
   <h2>Credits</h2>
   <ul>
