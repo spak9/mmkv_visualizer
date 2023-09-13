@@ -37,9 +37,3 @@ If needed, the application allows decryption of the data, but must be given the 
 
 1. The encrypted MMKV file AND corresponding .crc file (the .crc file contains the 16-byte IV)
 2. The AES key. (Will be prompted to enter the AES key in the form of a hexstring, allowing any length for the key)
-
-## Roadmap
-
-- [x] Expose more metadata: whether database size was found, or if it's a best effort approach, file is empty, file is probablistically encrypted.
-- [ ] Experiment with new UI design and see if Svelte Material is a viable solution.
-- [x] Enable decryption with user input of encryption key.
