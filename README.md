@@ -2,7 +2,7 @@
 A web application that will allow you to visualize [MMKV](https://github.com/Tencent/MMKV) databases, with all processing done client-side.
 The [web service](https://www.mmkv-visualizer.com/) utilizes [Pyodide](https://pyodide.org/en/stable/) which enables a python 
 runtime within the browser, in which the main MMKV parsing code is written in.
-It sends no data up to any server and all the parsing happens right in your browser.
+*It sends no data up to any server and all the parsing happens right in your browser.*
 
 ## Usage
 
@@ -12,8 +12,11 @@ There are three ways you can use the following code:
 
 The main way is to utilize the online web service provided at https://www.mmkv-visualizer.com/.
 You can simply drag & drop or choose an MMKV of your choice, then visualize the data.
-The visualizer allows you to iterate through different data type encodings (MMKV uses protobuf encoding)
-by simply clicking any table cell, as well as expand the data to get a deeper look.
+The visualizer allows you to iterate through different data type encodings, including strings, 
+bytes, NSCodings, and more. 
+You can iterate the type by simply clicking a table cell, as well as expand the data to get a deeper look.
+
+See below for more information on decryption capabilities.
 
 2. Local Web Application:
 
