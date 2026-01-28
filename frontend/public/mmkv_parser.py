@@ -23,7 +23,7 @@ def decode_unsigned_varint(buffered_base: BufferedIOBase, mask: int = 32) -> Tup
     decode an "int64" type, use a 64-bit mask.
     Note: this should always be used for reading varints denoting lengths
 
-    :param buffered_base: A file-like object that will incremently read byte-by-byte
+    :param buffered_base: A file-like object that will incrementally read byte-by-byte
     :param mask: an int that denotes either a 32 or 64-bit type.
     :return: A Tuple[int, int] of (varint_result, bytes_read) or (-1, -1) for invalid reading
     """
@@ -254,7 +254,6 @@ class MMKVParser:
     '''
         Decoding Procedures
     '''
-
     def decode_into_map(self) -> DefaultDict[str, List[bytes]]:
         """
         A best-effort approach on linearly parsing the `mmkv_file` stream and building up 
@@ -319,7 +318,7 @@ class MMKVParser:
                 self.pos += bytes_read
                 continue
 
-            # Parse the value (bytes which will then be iterpretable, since there's type tied to data)
+            # Parse the value (bytes which will then be interpretable, since there's type tied to data)
             value_bytes = self.mmkv_file.read(value_length)
             self.pos += value_length
 
@@ -454,6 +453,42 @@ class MMKVParser:
             return None
 
         return struct.unpack('<d', value)[0]
+
+    @staticmethod
+    def decode_as_754_double_precision(value: Union[str, bytes]) -> Optional[float]:
+        """
+        Decodes `value` as a 754 double-precision float, which is 8 bytes.
+        In Android, this is the "double" type, Python this is the "float" type.
+
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the float result, or None on surely invalid `value`
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+
+        if len(value) != 8:
+            print(f'[+] Could not float decode {value!r} due to length')
+            return None
+
+        return struct.unpack('<d', value)[0]
+
+    @staticmethod
+    def decode_as_754_single_precision(value: Union[str, bytes]) -> Optional[float]:
+        """
+        Decodes `value` as a 754 single-precision float, which is 8 bytes.
+        In Android, this is the "float" type, Python this is the "float" type.
+
+        :param value:
+        :return:
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+
+        if len(value) != 4:
+            print(f'[+] Could not decode {value!r} due to length')
+            return None
+
+        return struct.unpack('<f', value)[0]
 
     @staticmethod
     def decode_as_bool(value: Union[str, bytes]) -> Optional[bool]:
