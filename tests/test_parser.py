@@ -44,7 +44,8 @@ class TestVarintDecoder(unittest.TestCase):
 
 class TestMMKVParser_PythonVersion1_2_13(unittest.TestCase):
     """
-    Test class for testing the MMKVParser class against the v1.2.13 Python data
+    Test class for testing the MMKVParser against:
+    v1.2.13 Python data
     """
 
     ######
@@ -194,7 +195,10 @@ class TestMMKVParser_PythonVersion1_2_13(unittest.TestCase):
             self.assertEqual(mmkv_map, m)
 
 class TestMMKVParser_AndroidVersion1_2_16(unittest.TestCase):
-
+    """
+    Test class for testing the MMKVParser against:
+    v1.2.16 Android
+    """
     #####
     # Tests for holistically "raw map" checks - no type decoding
     #####
@@ -222,6 +226,16 @@ class TestMMKVParser_AndroidVersion1_2_16(unittest.TestCase):
             mmkv_parser = MMKVParser(mmkv_file_data=f)
             mmkv_map = mmkv_parser.decode_into_map()
             m = {'key': [b'\xdc\x22']}
+            self.assertEqual(mmkv_map, m)
+
+    def test_decode_map_int_removes(self):
+        with open(ANDROID_V1_2_16_PATH / 'data_int32_keypair_with_remove', 'rb') as f:
+            mmkv_parser = MMKVParser(mmkv_file_data=f)
+            mmkv_map = mmkv_parser.decode_into_map()
+
+            m = defaultdict(list, {
+                'key': [b'\xdc"']
+            })
             self.assertEqual(mmkv_map, m)
 
     def test_decode_map_int_updates(self):
@@ -299,6 +313,17 @@ class TestMMKVParser_AndroidVersion1_2_16(unittest.TestCase):
             hexstr = mmkv_map.get('string_key')[0].hex()
             self.assertEqual('steven pak', mmkv_parser.decode_as_string(hexstr))
 
+    def test_decode_string_set(self):
+        with open(ANDROID_V1_2_16_PATH / 'data_string_set_with_updates_and_removes', 'rb') as f:
+            mmkv_parser = MMKVParser(mmkv_file_data=f)
+            mmkv_map = mmkv_parser.decode_into_map()
+
+            first_encode = mmkv_map.get('string_set_key')[0].hex()
+            second_encode = mmkv_map.get('string_set_key')[1].hex()
+
+            self.assertEqual({"one", "two", "three", "four", "five"}, mmkv_parser.decode_as_string_set(second_encode))
+            self.assertEqual({"one", "two", "three", "four", "five", "six?"}, mmkv_parser.decode_as_string_set(first_encode))
+
     def test_decode_all_floats(self):
         with open(ANDROID_V1_2_16_PATH / 'data_all_types', 'rb') as f:
             mmkv_parser = MMKVParser(mmkv_file_data=f)
@@ -310,18 +335,29 @@ class TestMMKVParser_AndroidVersion1_2_16(unittest.TestCase):
             self.assertEqual(3.140000104904175, mmkv_parser.decode_as_754_single_precision(float_data))
             self.assertEqual(sys.float_info.max, mmkv_parser.decode_as_754_double_precision(double_data))
 
+    def test_decode_parcelable_intent(self):
+        with open(ANDROID_V1_2_16_PATH / 'data_parcelable_with_updates_and_removes', 'rb') as f:
+            mmkv_parser = MMKVParser(mmkv_file_data=f)
+            mmkv_map = mmkv_parser.decode_into_map()
+
+            encoded_parcelable = [
+                b'\xa8\x02\xff\xff\xff\xff\x00\x00\x00\x00\t\x00\x00\x00text/html\x00\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\xff\xff\xff\xff\x17\x00\x00\x00c\x00o\x00m\x00.\x00e\x00x\x00a\x00m\x00p\x00l\x00e\x00.\x00m\x00m\x00k\x00v\x00t\x00e\x00s\x00t\x00a\x00p\x00p\x00\x00\x00$\x00\x00\x00c\x00o\x00m\x00.\x00e\x00x\x00a\x00m\x00p\x00l\x00e\x00.\x00m\x00m\x00k\x00v\x00t\x00e\x00s\x00t\x00a\x00p\x00p\x00.\x00M\x00a\x00i\x00n\x00A\x00c\x00t\x00i\x00v\x00i\x00t\x00y\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfe\xff\xff\xffd\x00\x00\x00BNDL\x03\x00\x00\x00\x03\x00\x00\x00a\x00g\x00e\x00\x00\x00\x01\x00\x00\x00\x1b\x00\x00\x00\x04\x00\x00\x00n\x00a\x00m\x00e\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\x00\x00\x00S\x00t\x00e\x00v\x00e\x00n\x00 \x00P\x00a\x00k\x00\x00\x00\x00\x00\x05\x00\x00\x00s\x00k\x00i\x00l\x00l\x00\x00\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+                b'\x8c\x02\xff\xff\xff\xff\x00\x00\x00\x00\t\x00\x00\x00text/html\x00\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\xff\xff\xff\xff\x17\x00\x00\x00c\x00o\x00m\x00.\x00e\x00x\x00a\x00m\x00p\x00l\x00e\x00.\x00m\x00m\x00k\x00v\x00t\x00e\x00s\x00t\x00a\x00p\x00p\x00\x00\x00$\x00\x00\x00c\x00o\x00m\x00.\x00e\x00x\x00a\x00m\x00p\x00l\x00e\x00.\x00m\x00m\x00k\x00v\x00t\x00e\x00s\x00t\x00a\x00p\x00p\x00.\x00M\x00a\x00i\x00n\x00A\x00c\x00t\x00i\x00v\x00i\x00t\x00y\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfe\xff\xff\xffH\x00\x00\x00BNDL\x02\x00\x00\x00\x03\x00\x00\x00a\x00g\x00e\x00\x00\x00\x01\x00\x00\x00\x1b\x00\x00\x00\x04\x00\x00\x00n\x00a\x00m\x00e\x00\x00\x00\x00\x00\x00\x00\x00\x00\n\x00\x00\x00S\x00t\x00e\x00v\x00e\x00n\x00 \x00P\x00a\x00k\x00\x00\x00\x00\x00']
+            
+            self.assertEqual(mmkv_map.get('parcelable_key'), encoded_parcelable)
+
     # Tests for decrypted databases
     def test_decrypt_one(self):
-        with open(PYTHON_V1_2_13_PATH / 'data_encrypt', 'rb') as f, open(PYTHON_V1_2_13_PATH / 'data_encrypt.crc',
+        with open(ANDROID_V1_2_16_PATH / 'data_encrypt', 'rb') as f, open(ANDROID_V1_2_16_PATH / 'data_encrypt.crc',
                                                                          'rb') as c:
             mmkv_parser = MMKVParser(mmkv_file_data=f, crc_file_data=c)
-            mmkv_parser.decrypt_and_reconstruct(key=b'kindalongsecretkey'[:16])
+            mmkv_parser.decrypt_and_reconstruct(key=b'kindalongsecretkey')
             mmkv_map = mmkv_parser.decode_into_map()
 
             m = defaultdict(list, {
                 'bool_key': [b'\x01'],
                 'name': [b'\x06steven'],
-                'float_key': [b'\x1f\x85\xebQ\xb8\x1e\t@'],
+                'float_key': [b'\xc3\xf5H@'],
                 'int_key': [b'*']
             })
 

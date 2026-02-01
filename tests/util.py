@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import Dict, List, Set
 
 import mmkv
-import sys
 from importlib.metadata import version, PackageNotFoundError
 
 

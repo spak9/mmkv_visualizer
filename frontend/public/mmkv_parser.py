@@ -1,6 +1,6 @@
 from io import BufferedIOBase, BytesIO
 from pathlib import Path
-from typing import Optional, List, Union, Tuple, DefaultDict
+from typing import Optional, List, Union, Tuple, DefaultDict, Set
 from collections import defaultdict
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
@@ -395,6 +395,44 @@ class MMKVParser:
                 raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
             value = value[varint_len:varint + varint_len]
             return value.decode('utf-8')
+        except:
+            print(f'[+] Could not UTF-8 decode {value!r}')
+            return None
+
+    @staticmethod
+    def decode_as_string_set(value: Union[str, bytes]) -> Optional[Set[str]]:
+        """
+        Attempts to decodes `value` as a set of UTF-8 strings.
+        Note: This assumes that `value`, that is the entire set, has the "erroneous" varint length wrapper
+
+        :param value: hexstring for Pyodide-based API or protobuf-encoded bytes value
+        :return: Returns the UTF-8 decoded string, or None if not possible
+        """
+        if isinstance(value, str):
+            value = bytes.fromhex(value)
+
+        # Strip off the varint length delimiter bytes
+        varint, varint_len = decode_unsigned_varint(BytesIO(value), mask=32)
+
+        try:
+            if varint_len >= len(value):
+                raise ValueError('[+] Wrapper bytes length when decoding string is longer than `value`.')
+            value = value[varint_len:varint + varint_len]
+
+            # Read value array continuously for key-value pairs until length of value (set<string>) is read
+            bytes_buffer = BytesIO(value)
+            string_set: Set[str] = set()
+            while bytes_buffer.tell() < len(value):
+
+                # Parse the string element length
+                key_length, bytes_read = decode_unsigned_varint(bytes_buffer, mask=32)
+
+                # Read string element
+                string_element = bytes_buffer.read(key_length).decode('utf-8')
+                string_set.add(string_element)
+
+            return string_set
+
         except:
             print(f'[+] Could not UTF-8 decode {value!r}')
             return None

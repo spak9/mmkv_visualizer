@@ -2,14 +2,18 @@ package com.example.mmkvtestapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.tencent.mmkv.MMKV;
 
 import java.io.File;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,23 +32,20 @@ public class MainActivity extends AppCompatActivity {
     /// Creates ALL test data for ALL MMKV versions (e.g. 1.2.16, 1.3, 2.0, etc...).
     /// The onus is on the function to check compatibility with APIs (e.g. autokeyExpiration in v1.3)
     public void createTestData() {
-        // All basic types encodings
+        // [v1.2.x, v1.3]
         createDataAllTypes();
-
-        // Int
         createInt32Keypair();
         createInt32KeypairWithRemove();
         createInt32KeypairWithUpdates();
-
-        // Float
         createFloatKeypairWithUpdates();
-
-        // String
         createStringKeypairWithRemove();
         createStringKeypairWithUpdates();
-
-        // Encryption (AES-CFB)
         createDataEncrypt();
+        createStringSet();
+        createParcelable();
+
+        // [v1.3]
+        //createAutoKeyExpirationData();
     }
 
     private void deleteMMKVFiles(String mmkvId) {
@@ -149,4 +150,41 @@ public class MainActivity extends AppCompatActivity {
         kv.encode("float_key", 3.14f);
         kv.encode("int_key", 42);
     }
+
+    private void createStringSet() {
+        deleteMMKVFiles("data_string_set_with_updates_and_removes");
+        MMKV kv = MMKV.mmkvWithID("data_string_set_with_updates_and_removes");
+
+        // 1. Write basic set first
+        Set<String> stringSet = new HashSet<>(Arrays.asList("one", "two", "three", "four", "five"));
+        kv.encode("string_set_key", stringSet);
+
+        // 2. Update set and re-write
+        stringSet.add("six?");
+        kv.encode("string_set_key", stringSet);
+
+        // 3. Remove
+        kv.remove("string_set_key");
+    }
+
+    private void createParcelable() {
+        deleteMMKVFiles("data_parcelable_with_updates_and_removes");
+        MMKV kv = MMKV.mmkvWithID("data_parcelable_with_updates_and_removes");
+
+        // 1. Write Parcelable first
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setData(Uri.parse("https://stevenpak.me"));
+        intent.setType("text/html");
+        intent.putExtra("name", "Steven Pak");
+        intent.putExtra("age", 27);
+        kv.encode("parcelable_key", intent);
+
+        // 2. Update and re-write
+        intent.putExtra("skill", 0.0);
+        kv.encode("parcelable_key", intent);
+
+        // 3. Remove
+        kv.removeValueForKey("parcelable_key");
+    }
+
 }
