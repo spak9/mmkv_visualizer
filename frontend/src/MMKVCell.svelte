@@ -3,9 +3,7 @@
   import MMKVCellModal from './MMKVCellModal.svelte'
   import { mmkvParserStore } from './MMKVParserStore.mjs'
   import { get } from 'svelte/store'
-  import Copy from "carbon-icons-svelte/lib/Copy.svelte";
-  import FitToHeight from "carbon-icons-svelte/lib/FitToHeight.svelte";
-
+  import { Copy, FitToHeight } from "carbon-icons-svelte";
 	export let hexstring 		// Hex string representing the data 
 
   const dataTypes = [

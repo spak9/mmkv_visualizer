@@ -29,7 +29,7 @@
 <style>
 	li {
 		margin: 16px auto;
-		padding-left: px;
+		padding-left: 0;
 	}
 	p {
 		align-self: center;
