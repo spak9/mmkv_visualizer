@@ -1,0 +1,196 @@
+<svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .box { fill: #f8f9fa; stroke: #2c3e50; stroke-width: 2; }
+      .highlight { fill: #e3f2fd; stroke: #1565c0; stroke-width: 2; }
+      .server-box { fill: #fff3e0; stroke: #e65100; stroke-width: 2; }
+      .cloud { fill: #fff9c4; stroke: #f57f17; stroke-width: 2; }
+      .text { font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px; fill: #2c3e50; }
+      .title { font-weight: bold; font-size: 16px; fill: #1565c0; }
+      .subtitle { font-size: 12px; fill: #666; }
+      .arrow { stroke: #1976d2; stroke-width: 3; fill: none; marker-end: url(#arrowhead); }
+      .arrow-reverse { stroke: #388e3c; stroke-width: 3; fill: none; marker-end: url(#arrowhead-green); }
+      .tunnel-arrow { stroke: #d32f2f; stroke-width: 4; fill: none; stroke-dasharray: 8,4; }
+      .label { font-size: 11px; fill: #1976d2; font-weight: 600; }
+      .step-num { fill: #1976d2; font-weight: bold; font-size: 18px; }
+      .section-title { font-size: 20px; font-weight: bold; fill: #1565c0; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#1976d2" />
+    </marker>
+    <marker id="arrowhead-green" markerWidth="10" marrowHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#388e3c" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="600" y="35" class="section-title" text-anchor="middle">Complete Self-Hosted Architecture: mmkv-visualizer.com</text>
+  
+  <!-- USER SECTION -->
+  <rect x="50" y="80" width="180" height="100" class="highlight" rx="8"/>
+  <text x="140" y="105" class="title" text-anchor="middle">👤 User's Browser</text>
+  <text x="140" y="130" class="text" text-anchor="middle">Types:</text>
+  <text x="140" y="150" class="text" text-anchor="middle" font-weight="bold">www.mmkv-visualizer.com</text>
+  <text x="140" y="170" class="subtitle" text-anchor="middle">Makes HTTPS request</text>
+  
+  <!-- Step 1: DNS Lookup -->
+  <text x="50" y="215" class="step-num">①</text>
+  <text x="70" y="215" class="label">DNS Lookup</text>
+  
+  <!-- DNS SERVER -->
+  <rect x="320" y="80" width="180" height="100" class="box" rx="8"/>
+  <text x="410" y="105" class="title" text-anchor="middle">🌐 DNS Server</text>
+  <text x="410" y="130" class="text" text-anchor="middle">Queries Cloudflare DNS</text>
+  <text x="410" y="150" class="subtitle" text-anchor="middle">Returns CNAME:</text>
+  <text x="410" y="165" class="subtitle" text-anchor="middle" font-size="10">eebd63fa-4ece...cfargotunnel.com</text>
+  
+  <!-- Arrow: Browser to DNS -->
+  <path d="M 230 130 L 320 130" class="arrow"/>
+  
+  <!-- Step 2: DNS Response -->
+  <text x="240" y="115" class="label">Query</text>
+  <path d="M 320 150 L 230 150" class="arrow-reverse"/>
+  <text x="240" y="170" class="label" fill="#388e3c">CNAME Record</text>
+  
+  <!-- CLOUDFLARE EDGE -->
+  <rect x="590" y="60" width="280" height="140" class="cloud" rx="8"/>
+  <text x="730" y="85" class="title" text-anchor="middle">☁️ Cloudflare Edge Network</text>
+  <text x="730" y="110" class="text" text-anchor="middle">Nearest Data Center</text>
+  <text x="730" y="130" class="subtitle" text-anchor="middle">(New York, London, Tokyo, etc.)</text>
+  <text x="730" y="155" class="text" text-anchor="middle">• Terminates HTTPS</text>
+  <text x="730" y="175" class="text" text-anchor="middle">• Routes to Tunnel ID</text>
+  
+  <!-- Step 3: Browser to Cloudflare -->
+  <text x="50" y="250" class="step-num">②</text>
+  <text x="70" y="250" class="label">HTTPS Connection</text>
+  <path d="M 230 110 Q 400 50 590 110" class="arrow"/>
+  <text x="380" y="65" class="label">GET / HTTP/2</text>
+  <text x="380" y="80" class="subtitle">SSL/TLS Encrypted</text>
+  
+  <!-- TUNNEL CONNECTION (Persistent) -->
+  <rect x="50" y="280" width="820" height="120" rx="8" fill="#ffebee" stroke="#c62828" stroke-width="3" stroke-dasharray="10,5"/>
+  <text x="460" y="305" class="title" text-anchor="middle" fill="#c62828">🔒 ENCRYPTED CLOUDFLARE TUNNEL (Persistent Outbound Connection)</text>
+  
+  <!-- Tunnel Details -->
+  <rect x="100" y="320" width="720" height="65" class="box" rx="5"/>
+  <text x="460" y="340" class="text" text-anchor="middle" font-weight="bold">Tunnel ID: eebd63fa-4ece-4bde-84e6-89fc81a84e60</text>
+  <text x="460" y="360" class="subtitle" text-anchor="middle">4 persistent connections established from YOUR server → Cloudflare (outbound only)</text>
+  <text x="460" y="375" class="subtitle" text-anchor="middle">No inbound ports needed! No port forwarding! Your home IP stays hidden!</text>
+  
+  <!-- Step 4: Route through tunnel -->
+  <text x="590" y="270" class="step-num">③</text>
+  <text x="610" y="270" class="label">Routes via Tunnel</text>
+  <path d="M 730 200 L 730 280" class="tunnel-arrow"/>
+  
+  <!-- YOUR HOME SERVER SECTION -->
+  <rect x="50" y="450" width="820" height="400" class="server-box" rx="8"/>
+  <text x="460" y="480" class="section-title" text-anchor="middle">🏠 Your Home Server (miemma) - Dynamic IP, No Port Forwarding!</text>
+  
+  <!-- Router Box -->
+  <rect x="80" y="500" width="760" height="80" fill="#fff" stroke="#ff6f00" stroke-width="2" rx="5"/>
+  <text x="460" y="525" class="text" text-anchor="middle" font-weight="bold">Your Router (Dynamic IP: changes randomly)</text>
+  <text x="460" y="545" class="subtitle" text-anchor="middle">No ports forwarded! No static IP needed!</text>
+  <text x="460" y="565" class="subtitle" text-anchor="middle">Tunnel connects OUTBOUND through this router to Cloudflare</text>
+  
+  <!-- cloudflared process -->
+  <rect x="100" y="610" width="280" height="210" class="highlight" rx="8"/>
+  <text x="240" y="635" class="title" text-anchor="middle">cloudflared Service</text>
+  <text x="240" y="655" class="text" text-anchor="middle">Systemd Service</text>
+  <text x="240" y="675" class="subtitle" text-anchor="middle">Config: /etc/cloudflared/config.yml</text>
+  
+  <!-- Config details -->
+  <rect x="120" y="690" width="240" height="115" fill="#fff" stroke="#1565c0" stroke-width="1" rx="3"/>
+  <text x="240" y="710" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">tunnel: eebd63fa-4ece...</text>
+  <text x="240" y="725" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">ingress:</text>
+  <text x="240" y="740" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">  - hostname: www.mmkv-visualizer.com</text>
+  <text x="240" y="755" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">    service: http://localhost:80</text>
+  <text x="240" y="770" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">  - hostname: mmkv-visualizer.com</text>
+  <text x="240" y="785" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">    service: http://localhost:80</text>
+  <text x="240" y="800" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">  - service: http_status:404</text>
+  
+  <!-- Nginx -->
+  <rect x="450" y="610" width="180" height="120" class="highlight" rx="8"/>
+  <text x="540" y="635" class="title" text-anchor="middle">Nginx Web Server</text>
+  <text x="540" y="660" class="text" text-anchor="middle">Port 80 (localhost only)</text>
+  <text x="540" y="680" class="subtitle" text-anchor="middle">Config:</text>
+  <text x="540" y="695" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">/etc/nginx/sites-enabled/</text>
+  <text x="540" y="710" class="subtitle" text-anchor="middle" font-family="monospace" font-size="10">svelte-app</text>
+  
+  <!-- Static Files -->
+  <rect x="680" y="610" width="140" height="120" class="box" rx="8"/>
+  <text x="750" y="635" class="title" text-anchor="middle">📁 Static Files</text>
+  <text x="750" y="660" class="text" text-anchor="middle">/var/www/</text>
+  <text x="750" y="680" class="text" text-anchor="middle">svelte-app/</text>
+  <text x="750" y="700" class="subtitle" text-anchor="middle">• index.html</text>
+  <text x="750" y="715" class="subtitle" text-anchor="middle">• assets/</text>
+  
+  <!-- Logs -->
+  <rect x="450" y="750" width="370" height="60" class="box" rx="5"/>
+  <text x="635" y="770" class="text" text-anchor="middle" font-weight="bold">📊 Logs & Analytics</text>
+  <text x="635" y="790" class="subtitle" text-anchor="middle">/var/log/nginx/svelte-app.access.log - Every request logged!</text>
+  
+  <!-- Step 5: Tunnel to cloudflared -->
+  <text x="450" y="440" class="step-num">④</text>
+  <text x="470" y="440" class="label">Tunnel delivers request</text>
+  <path d="M 240 400 L 240 610" class="tunnel-arrow"/>
+  
+  <!-- Step 6: cloudflared to nginx -->
+  <text x="395" y="645" class="step-num">⑤</text>
+  <path d="M 380 670 L 450 670" class="arrow"/>
+  <text x="395" y="665" class="label">Forward to</text>
+  <text x="395" y="680" class="label">localhost:80</text>
+  
+  <!-- Step 7: nginx to files -->
+  <text x="645" y="645" class="step-num">⑥</text>
+  <path d="M 630 670 L 680 670" class="arrow"/>
+  <text x="645" y="665" class="label">Serve files</text>
+  
+  <!-- Response arrows -->
+  <text x="645" y="700" class="step-num">⑦</text>
+  <path d="M 680 690 L 630 690" class="arrow-reverse"/>
+  <text x="660" y="705" class="label" fill="#388e3c" font-size="10">HTML</text>
+  
+  <text x="395" y="700" class="step-num">⑧</text>
+  <path d="M 450 690 L 380 690" class="arrow-reverse"/>
+  <text x="410" y="705" class="label" fill="#388e3c" font-size="10">Response</text>
+  
+  <text x="450" y="430" class="step-num">⑨</text>
+  <path d="M 270 610 L 270 400" class="arrow-reverse"/>
+  <text x="285" y="500" class="label" fill="#388e3c">Back through tunnel</text>
+  
+  <!-- Response to user -->
+  <text x="50" y="100" class="step-num">⑩</text>
+  <path d="M 590 140 Q 400 220 230 140" class="arrow-reverse"/>
+  <text x="380" y="210" class="label" fill="#388e3c">HTTP/2 200 OK</text>
+  <text x="380" y="225" class="subtitle" fill="#388e3c">Your Svelte App!</text>
+  
+  <!-- Key Benefits Box -->
+  <rect x="920" y="80" width="250" height="320" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" rx="8"/>
+  <text x="1045" y="110" class="title" text-anchor="middle" fill="#2e7d32">✨ Key Benefits</text>
+  
+  <text x="940" y="140" class="text" font-weight="bold">No Static IP Needed:</text>
+  <text x="940" y="160" class="subtitle">Tunnel connects outbound</text>
+  
+  <text x="940" y="185" class="text" font-weight="bold">No Port Forwarding:</text>
+  <text x="940" y="205" class="subtitle">No open inbound ports</text>
+  
+  <text x="940" y="230" class="text" font-weight="bold">Home IP Hidden:</text>
+  <text x="940" y="250" class="subtitle">Only Cloudflare knows it</text>
+  
+  <text x="940" y="275" class="text" font-weight="bold">Free SSL/HTTPS:</text>
+  <text x="940" y="295" class="subtitle">Auto-managed by Cloudflare</text>
+  
+  <text x="940" y="320" class="text" font-weight="bold">DDoS Protection:</text>
+  <text x="940" y="340" class="subtitle">Cloudflare absorbs attacks</text>
+  
+  <text x="940" y="365" class="text" font-weight="bold">Always On:</text>
+  <text x="940" y="385" class="subtitle">Systemd service auto-starts</text>
+  
+  <!-- Domain Info -->
+  <rect x="920" y="420" width="250" height="100" fill="#fff3e0" stroke="#e65100" stroke-width="2" rx="8"/>
+  <text x="1045" y="450" class="title" text-anchor="middle" fill="#e65100">🌍 Your Domain</text>
+  <text x="1045" y="475" class="text" text-anchor="middle" font-weight="bold">mmkv-visualizer.com</text>
+  <text x="1045" y="495" class="subtitle" text-anchor="middle">Registered: Vercel ($15/yr)</text>
+  <text x="1045" y="510" class="subtitle" text-anchor="middle">DNS: Cloudflare (Free)</text>
+</svg>
